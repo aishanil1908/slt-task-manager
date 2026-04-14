@@ -1427,15 +1427,39 @@ async function actionReopen(id){
   refreshCounts();
 }
 
-function handleProofUpload(input,type){
-  if(!input.files||!input.files[0]) return;
-  const fname=input.files[0].name;
-  if(type==='stage2proof' && curDetailId!==null){
-    const t=TASKS.find(x=>x.id===curDetailId);
-    if(t){ t.proofUploaded=true; showToast(`📎 Proof uploaded: ${fname}`,'success'); renderDetail(t); }
-  } else if(type==='stage4doc' && curDetailId!==null){
-    const t=TASKS.find(x=>x.id===curDetailId);
-    if(t){ t.s4docUploaded=true; showToast(`📎 Fulfillment doc uploaded: ${fname}`,'success'); renderDetail(t); }
+async function handleProofUpload(input, type) {
+  const file = input.files[0];
+  if (!file) return;
+
+  if (!curDetailId) { 
+    showToast('❌ No task selected', 'error'); 
+    return; 
+  }
+
+  const stage = (type === 'stage2proof') ? 2 : 4;
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('stage', stage);
+
+  showToast('📤 Uploading...', 'info');
+
+  try {
+    const response = await fetch(`${API}/tasks/${curDetailId}/proof`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + authToken },
+      body: formData
+    });
+    const data = await response.json();
+
+    if (data.success) {
+      showToast(`✅ ${file.name} uploaded successfully`, 'success');
+      await loadDashboard();
+      openDetail(curDetailId);
+    } else {
+      showToast('❌ Upload failed: ' + data.error, 'error');
+    }
+  } catch (err) {
+    showToast('❌ Upload error: ' + err.message, 'error');
   }
 }
 
