@@ -15,6 +15,7 @@ const dashboardRoutes = require('./routes/dashboard');
 const tasksRoutes     = require('./routes/tasks');
 const usersRoutes     = require('./routes/users');
 const misRoutes       = require('./routes/mis');
+const auth            = require('./middleware/auth');
 
 const app  = express();
 const PORT = process.env.PORT || 5000;

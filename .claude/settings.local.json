@@ -12,7 +12,11 @@
       "Bash(cmd /c \"wmic process where ProcessId=6044 get Name,CommandLine 2>&1\")",
       "Bash(powershell -Command \"Get-Process -Id 36068 | Select-Object Name, Id, MainWindowTitle; Get-Process -Id 6044 | Select-Object Name, Id, MainWindowTitle\")",
       "Bash(powershell -Command \"Stop-Process -Id 36068 -Force; Stop-Process -Id 6044 -Force; Start-Sleep -Seconds 1; Write-Host 'Stopped'\")",
-      "Bash(ping -n 3 127.0.0.1)"
+      "Bash(ping -n 3 127.0.0.1)",
+      "Bash(pandoc \"D:\\\\MyApps\\\\slt-task-manager\\\\SLT_Test_Report_2.docx\" -t plain)",
+      "Bash(python -c ':*)",
+      "Bash(npm run:*)",
+      "Bash(node server.js)"
     ]
   }
 }
