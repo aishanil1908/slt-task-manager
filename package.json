@@ -1,0 +1,21 @@
+{
+  "name": "slt-task-manager",
+  "version": "2.0.0",
+  "description": "Second Level Think — Task Management System",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "test:api": "jest tests/api.test.js --verbose",
+    "test:frontend": "playwright test tests/frontend.spec.js --headed",
+    "test:all": "npm run test:api && npm run test:frontend",
+    "test:api:watch": "jest tests/api.test.js --watch",
+    "test:api:group": "jest tests/api.test.js --verbose -t"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.6.0",
+    "form-data": "^4.0.5",
+    "jest": "^29.7.0",
+    "node-fetch": "^2.7.0"
+  }
+}

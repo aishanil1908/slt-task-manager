@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "Bash(netstat -ano)",
+      "Bash(findstr \":5000 \")",
+      "Bash(findstr \":3000 \")",
+      "Bash(tasklist /fi \"PID eq 36068\" /fo list)",
+      "Bash(tasklist /fi \"PID eq 6044\" /fo list)",
+      "Bash(cmd /c \"tasklist /fi \\\\\"PID eq 36068\\\\\" /fo list && tasklist /fi \\\\\"PID eq 6044\\\\\" /fo list\")",
+      "Bash(cmd /c \"wmic process where ProcessId=36068 get Name,CommandLine 2>&1\")",
+      "Bash(cmd /c \"wmic process where ProcessId=6044 get Name,CommandLine 2>&1\")",
+      "Bash(powershell -Command \"Get-Process -Id 36068 | Select-Object Name, Id, MainWindowTitle; Get-Process -Id 6044 | Select-Object Name, Id, MainWindowTitle\")",
+      "Bash(powershell -Command \"Stop-Process -Id 36068 -Force; Stop-Process -Id 6044 -Force; Start-Sleep -Seconds 1; Write-Host 'Stopped'\")",
+      "Bash(ping -n 3 127.0.0.1)"
+    ]
+  }
+}

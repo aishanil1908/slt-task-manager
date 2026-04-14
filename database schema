@@ -1,0 +1,255 @@
+"table_name","column_name","data_type","is_nullable","column_default"
+"categories","id","integer","NO","nextval('categories_id_seq'::regclass)"
+"categories","vertical_id","integer","NO",NULL
+"categories","code","character varying","NO",NULL
+"categories","name","character varying","NO",NULL
+"categories","icon","character varying","YES",NULL
+"categories","requires_postsales","boolean","YES","false"
+"categories","default_ps_template","USER-DEFINED","YES","'none'::ps_template_type"
+"categories","display_order","integer","YES","0"
+"categories","is_active","boolean","YES","true"
+"categories","created_at","timestamp without time zone","YES","CURRENT_TIMESTAMP"
+"notifications","id","integer","NO","nextval('notifications_id_seq'::regclass)"
+"notifications","recipient_id","integer","NO",NULL
+"notifications","type","USER-DEFINED","NO",NULL
+"notifications","title","character varying","NO",NULL
+"notifications","message","text","YES",NULL
+"notifications","task_id","integer","YES",NULL
+"notifications","is_read","boolean","YES","false"
+"notifications","read_at","timestamp without time zone","YES",NULL
+"notifications","created_at","timestamp without time zone","YES","CURRENT_TIMESTAMP"
+"post_sales_fulfillment","id","integer","NO","nextval('post_sales_fulfillment_id_seq'::regclass)"
+"post_sales_fulfillment","task_id","integer","NO",NULL
+"post_sales_fulfillment","ps_template","USER-DEFINED","NO",NULL
+"post_sales_fulfillment","folio_number","character varying","YES",NULL
+"post_sales_fulfillment","units","numeric","YES",NULL
+"post_sales_fulfillment","nav_rate","numeric","YES",NULL
+"post_sales_fulfillment","allotment_date","date","YES",NULL
+"post_sales_fulfillment","tx_reference","character varying","YES",NULL
+"post_sales_fulfillment","amount_credited","numeric","YES",NULL
+"post_sales_fulfillment","client_account_no","character varying","YES",NULL
+"post_sales_fulfillment","demat_account_no","character varying","YES",NULL
+"post_sales_fulfillment","portal_login_id","character varying","YES",NULL
+"post_sales_fulfillment","temp_password","character varying","YES",NULL
+"post_sales_fulfillment","contribution_amount","numeric","YES",NULL
+"post_sales_fulfillment","policy_number","character varying","YES",NULL
+"post_sales_fulfillment","policy_issued_date","date","YES",NULL
+"post_sales_fulfillment","coverage_from","date","YES",NULL
+"post_sales_fulfillment","coverage_to","date","YES",NULL
+"post_sales_fulfillment","next_premium_due","date","YES",NULL
+"post_sales_fulfillment","annual_premium","numeric","YES",NULL
+"post_sales_fulfillment","fd_account_no","character varying","YES",NULL
+"post_sales_fulfillment","fd_receipt_no","character varying","YES",NULL
+"post_sales_fulfillment","fd_maturity_date","date","YES",NULL
+"post_sales_fulfillment","interest_rate","numeric","YES",NULL
+"post_sales_fulfillment","maturity_amount","numeric","YES",NULL
+"post_sales_fulfillment","bank_account_no","character varying","YES",NULL
+"post_sales_fulfillment","account_type","character varying","YES",NULL
+"post_sales_fulfillment","ifsc_code","character varying","YES",NULL
+"post_sales_fulfillment","net_banking_login","character varying","YES",NULL
+"post_sales_fulfillment","itr_ack_no","character varying","YES",NULL
+"post_sales_fulfillment","filing_date","date","YES",NULL
+"post_sales_fulfillment","financial_year","character varying","YES",NULL
+"post_sales_fulfillment","itr_form","character varying","YES",NULL
+"post_sales_fulfillment","total_income","numeric","YES",NULL
+"post_sales_fulfillment","eg_order_ref","character varying","YES",NULL
+"post_sales_fulfillment","eg_quantity_grams","numeric","YES",NULL
+"post_sales_fulfillment","eg_rate_per_gram","numeric","YES",NULL
+"post_sales_fulfillment","eg_metal_type","character varying","YES",NULL
+"post_sales_fulfillment","ca_filing_ref","character varying","YES",NULL
+"post_sales_fulfillment","ca_completion_date","date","YES",NULL
+"post_sales_fulfillment","ca_period","character varying","YES",NULL
+"post_sales_fulfillment","broker_client_id","character varying","YES",NULL
+"post_sales_fulfillment","broker_demat_no","character varying","YES",NULL
+"post_sales_fulfillment","credentials_shared","boolean","YES","false"
+"post_sales_fulfillment","submitted_by","integer","YES",NULL
+"post_sales_fulfillment","submitted_at","timestamp without time zone","YES","CURRENT_TIMESTAMP"
+"post_sales_fulfillment","verified_by","integer","YES",NULL
+"post_sales_fulfillment","verified_at","timestamp without time zone","YES",NULL
+"renewal_tracker","id","integer","NO","nextval('renewal_tracker_id_seq'::regclass)"
+"renewal_tracker","task_id","integer","NO",NULL
+"renewal_tracker","tracker_type","character varying","NO",NULL
+"renewal_tracker","client_name","character varying","YES",NULL
+"renewal_tracker","client_mobile","character varying","YES",NULL
+"renewal_tracker","client_email","character varying","YES",NULL
+"renewal_tracker","product_name","character varying","YES",NULL
+"renewal_tracker","policy_or_fd_no","character varying","YES",NULL
+"renewal_tracker","renewal_due_date","date","NO",NULL
+"renewal_tracker","coverage_to","date","YES",NULL
+"renewal_tracker","reminder_30d_sent","boolean","YES","false"
+"renewal_tracker","reminder_7d_sent","boolean","YES","false"
+"renewal_tracker","reminder_1d_sent","boolean","YES","false"
+"renewal_tracker","followup_task_id","integer","YES",NULL
+"renewal_tracker","is_actioned","boolean","YES","false"
+"renewal_tracker","created_at","timestamp without time zone","YES","CURRENT_TIMESTAMP"
+"subtasks","id","integer","NO","nextval('subtasks_id_seq'::regclass)"
+"subtasks","task_id","integer","NO",NULL
+"subtasks","title","character varying","NO",NULL
+"subtasks","instructions","text","YES",NULL
+"subtasks","assigned_to","integer","YES",NULL
+"subtasks","due_date","date","YES",NULL
+"subtasks","display_order","integer","YES","0"
+"subtasks","is_completed","boolean","YES","false"
+"subtasks","completed_at","timestamp without time zone","YES",NULL
+"subtasks","completed_by","integer","YES",NULL
+"subtasks","created_at","timestamp without time zone","YES","CURRENT_TIMESTAMP"
+"system_config","key","character varying","NO",NULL
+"system_config","value","text","NO",NULL
+"system_config","description","character varying","YES",NULL
+"system_config","updated_by","integer","YES",NULL
+"system_config","updated_at","timestamp without time zone","YES","CURRENT_TIMESTAMP"
+"task_proofs","id","integer","NO","nextval('task_proofs_id_seq'::regclass)"
+"task_proofs","task_id","integer","NO",NULL
+"task_proofs","stage","integer","NO",NULL
+"task_proofs","file_name","character varying","NO",NULL
+"task_proofs","file_path","character varying","NO",NULL
+"task_proofs","file_size","integer","YES",NULL
+"task_proofs","mime_type","character varying","YES",NULL
+"task_proofs","uploaded_by","integer","NO",NULL
+"task_proofs","uploaded_at","timestamp without time zone","YES","CURRENT_TIMESTAMP"
+"task_stage_history","id","integer","NO","nextval('task_stage_history_id_seq'::regclass)"
+"task_stage_history","task_id","integer","NO",NULL
+"task_stage_history","from_status","USER-DEFINED","YES",NULL
+"task_stage_history","to_status","USER-DEFINED","NO",NULL
+"task_stage_history","from_stage","integer","YES",NULL
+"task_stage_history","to_stage","integer","YES",NULL
+"task_stage_history","action","character varying","YES",NULL
+"task_stage_history","action_by","integer","NO",NULL
+"task_stage_history","note","text","YES",NULL
+"task_stage_history","created_at","timestamp without time zone","YES","CURRENT_TIMESTAMP"
+"tasks","id","integer","NO","nextval('tasks_id_seq'::regclass)"
+"tasks","vertical_id","integer","NO",NULL
+"tasks","category_id","integer","NO",NULL
+"tasks","nature_id","integer","NO",NULL
+"tasks","tx_type","USER-DEFINED","NO",NULL
+"tasks","sip_frequency","USER-DEFINED","YES",NULL
+"tasks","sip_date","integer","YES",NULL
+"tasks","sip_day","character varying","YES",NULL
+"tasks","ps_template","USER-DEFINED","YES","'none'::ps_template_type"
+"tasks","client_name","character varying","NO",NULL
+"tasks","client_father","character varying","YES",NULL
+"tasks","client_mobile","character varying","NO",NULL
+"tasks","client_email","character varying","YES",NULL
+"tasks","title","character varying","NO",NULL
+"tasks","description","text","YES",NULL
+"tasks","priority","USER-DEFINED","YES","'Normal'::task_priority"
+"tasks","proof_required","USER-DEFINED","YES","'Yes — Mandatory'::proof_requirement"
+"tasks","due_date","date","NO",NULL
+"tasks","status","USER-DEFINED","YES","'pending'::task_status"
+"tasks","stage","integer","YES","1"
+"tasks","proof_uploaded","boolean","YES","false"
+"tasks","s4_doc_uploaded","boolean","YES","false"
+"tasks","s3_confirmed_by","integer","YES",NULL
+"tasks","s3_confirmed_at","timestamp without time zone","YES",NULL
+"tasks","s3_note","text","YES",NULL
+"tasks","assigned_to","integer","NO",NULL
+"tasks","created_by","integer","NO",NULL
+"tasks","created_at","timestamp without time zone","YES","CURRENT_TIMESTAMP"
+"tasks","updated_at","timestamp without time zone","YES","CURRENT_TIMESTAMP"
+"tasks","completed_at","timestamp without time zone","YES",NULL
+"transaction_natures","id","integer","NO","nextval('transaction_natures_id_seq'::regclass)"
+"transaction_natures","category_id","integer","NO",NULL
+"transaction_natures","code","character varying","NO",NULL
+"transaction_natures","name","character varying","NO",NULL
+"transaction_natures","description","character varying","YES",NULL
+"transaction_natures","icon","character varying","YES",NULL
+"transaction_natures","ps_template_override","USER-DEFINED","YES",NULL
+"transaction_natures","is_sip","boolean","YES","false"
+"transaction_natures","display_order","integer","YES","0"
+"transaction_natures","is_active","boolean","YES","true"
+"user_sessions","id","integer","NO","nextval('user_sessions_id_seq'::regclass)"
+"user_sessions","user_id","integer","NO",NULL
+"user_sessions","token_hash","character varying","NO",NULL
+"user_sessions","expires_at","timestamp without time zone","NO",NULL
+"user_sessions","created_at","timestamp without time zone","YES","CURRENT_TIMESTAMP"
+"user_sessions","ip_address","character varying","YES",NULL
+"user_vertical_access","id","integer","NO","nextval('user_vertical_access_id_seq'::regclass)"
+"user_vertical_access","user_id","integer","NO",NULL
+"user_vertical_access","vertical_id","integer","NO",NULL
+"users","id","integer","NO","nextval('users_id_seq'::regclass)"
+"users","username","character varying","NO",NULL
+"users","full_name","character varying","NO",NULL
+"users","email","character varying","NO",NULL
+"users","mobile","character varying","YES",NULL
+"users","password_hash","character varying","YES",NULL
+"users","role","USER-DEFINED","NO",NULL
+"users","reports_to","integer","YES",NULL
+"users","tasks_active","integer","YES","0"
+"users","tasks_completed","integer","YES","0"
+"users","efficiency_pct","numeric","YES","0"
+"users","is_active","boolean","YES","true"
+"users","last_login","timestamp without time zone","YES",NULL
+"users","created_at","timestamp without time zone","YES","CURRENT_TIMESTAMP"
+"users","updated_at","timestamp without time zone","YES","CURRENT_TIMESTAMP"
+"v_dashboard_summary","pending_count","bigint","YES",NULL
+"v_dashboard_summary","inprogress_count","bigint","YES",NULL
+"v_dashboard_summary","postsales_count","bigint","YES",NULL
+"v_dashboard_summary","done_count","bigint","YES",NULL
+"v_dashboard_summary","overdue_count","bigint","YES",NULL
+"v_dashboard_summary","created_today","bigint","YES",NULL
+"v_renewals_due_30d","id","integer","YES",NULL
+"v_renewals_due_30d","task_id","integer","YES",NULL
+"v_renewals_due_30d","tracker_type","character varying","YES",NULL
+"v_renewals_due_30d","client_name","character varying","YES",NULL
+"v_renewals_due_30d","client_mobile","character varying","YES",NULL
+"v_renewals_due_30d","client_email","character varying","YES",NULL
+"v_renewals_due_30d","product_name","character varying","YES",NULL
+"v_renewals_due_30d","policy_or_fd_no","character varying","YES",NULL
+"v_renewals_due_30d","renewal_due_date","date","YES",NULL
+"v_renewals_due_30d","coverage_to","date","YES",NULL
+"v_renewals_due_30d","reminder_30d_sent","boolean","YES",NULL
+"v_renewals_due_30d","reminder_7d_sent","boolean","YES",NULL
+"v_renewals_due_30d","reminder_1d_sent","boolean","YES",NULL
+"v_renewals_due_30d","followup_task_id","integer","YES",NULL
+"v_renewals_due_30d","is_actioned","boolean","YES",NULL
+"v_renewals_due_30d","created_at","timestamp without time zone","YES",NULL
+"v_renewals_due_30d","original_task_title","character varying","YES",NULL
+"v_renewals_due_30d","category_id","integer","YES",NULL
+"v_staff_performance","id","integer","YES",NULL
+"v_staff_performance","full_name","character varying","YES",NULL
+"v_staff_performance","role","USER-DEFINED","YES",NULL
+"v_staff_performance","tasks_active","integer","YES",NULL
+"v_staff_performance","tasks_completed","integer","YES",NULL
+"v_staff_performance","efficiency_pct","numeric","YES",NULL
+"v_staff_performance","current_pending","bigint","YES",NULL
+"v_staff_performance","current_inprogress","bigint","YES",NULL
+"v_staff_performance","current_postsales","bigint","YES",NULL
+"v_staff_performance","overdue","bigint","YES",NULL
+"v_tasks_full","id","integer","YES",NULL
+"v_tasks_full","title","character varying","YES",NULL
+"v_tasks_full","status","USER-DEFINED","YES",NULL
+"v_tasks_full","stage","integer","YES",NULL
+"v_tasks_full","priority","USER-DEFINED","YES",NULL
+"v_tasks_full","tx_type","USER-DEFINED","YES",NULL
+"v_tasks_full","due_date","date","YES",NULL
+"v_tasks_full","created_at","timestamp without time zone","YES",NULL
+"v_tasks_full","proof_uploaded","boolean","YES",NULL
+"v_tasks_full","s4_doc_uploaded","boolean","YES",NULL
+"v_tasks_full","s3_confirmed_at","timestamp without time zone","YES",NULL
+"v_tasks_full","s3_note","text","YES",NULL
+"v_tasks_full","ps_template","USER-DEFINED","YES",NULL
+"v_tasks_full","sip_frequency","USER-DEFINED","YES",NULL
+"v_tasks_full","sip_date","integer","YES",NULL
+"v_tasks_full","sip_day","character varying","YES",NULL
+"v_tasks_full","vertical_name","character varying","YES",NULL
+"v_tasks_full","vertical_code","character varying","YES",NULL
+"v_tasks_full","category_name","character varying","YES",NULL
+"v_tasks_full","category_code","character varying","YES",NULL
+"v_tasks_full","nature_name","character varying","YES",NULL
+"v_tasks_full","nature_code","character varying","YES",NULL
+"v_tasks_full","client_name","character varying","YES",NULL
+"v_tasks_full","client_father","character varying","YES",NULL
+"v_tasks_full","client_mobile","character varying","YES",NULL
+"v_tasks_full","client_email","character varying","YES",NULL
+"v_tasks_full","assigned_to_name","character varying","YES",NULL
+"v_tasks_full","assigned_to_id","integer","YES",NULL
+"v_tasks_full","created_by_name","character varying","YES",NULL
+"v_tasks_full","created_by_id","integer","YES",NULL
+"v_tasks_full","s3_confirmed_by_name","character varying","YES",NULL
+"verticals","id","integer","NO","nextval('verticals_id_seq'::regclass)"
+"verticals","code","character varying","NO",NULL
+"verticals","name","character varying","NO",NULL
+"verticals","icon","character varying","YES",NULL
+"verticals","display_order","integer","YES","0"
+"verticals","is_active","boolean","YES","true"
+"verticals","created_at","timestamp without time zone","YES","CURRENT_TIMESTAMP"

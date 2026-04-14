@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Backend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "backend"],
+      "port": 5000,
+      "autoPort": false
+    },
+    {
+      "name": "Frontend",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "frontend", "--listen", "3000", "--no-clipboard"],
+      "port": 3000,
+      "autoPort": false
+    }
+  ]
+}

@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Second Level Think — Unified Task Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f1f4fb;--surface:#fff;--surface2:#f7f9fe;--border:#e3e9f7;
+  --navy:#0b1f5e;--navy2:#1a3080;--teal:#0d9488;--teal2:#0f766e;
+  --gold:#d97706;--red:#dc2626;--purple:#7c3aed;--green:#059669;--blue:#2563eb;
+  --ca:#1e40af;--ca-bg:#eff6ff;--ca-border:#bfdbfe;
+  --dist:#065f46;--dist-bg:#ecfdf5;--dist-border:#a7f3d0;
+  --broke:#6b21a8;--broke-bg:#f5f3ff;--broke-border:#ddd6fe;
+  --r:12px;--r-sm:8px;--sh:0 2px 16px rgba(11,31,94,.08);--sh-lg:0 8px 40px rgba(11,31,94,.16);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--navy);min-height:100vh;overflow-x:hidden;}
+
+/* LOGIN */
+#loginPage{min-height:100vh;background:linear-gradient(135deg,#0b1f5e 0%,#1e3a8a 50%,#0d9488 100%);display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-box{background:white;border-radius:20px;padding:48px 40px;width:100%;max-width:420px;box-shadow:0 32px 80px rgba(0,0,0,.3);}
+.login-logo{display:flex;align-items:center;gap:12px;margin-bottom:32px;}
+.login-logo-mark{width:44px;height:44px;background:linear-gradient(135deg,var(--navy),var(--teal));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:white;}
+.login-logo-text{font-size:18px;font-weight:800;color:var(--navy);}
+.login-logo-sub{font-size:11px;color:#64748b;font-weight:500;}
+.login-box h2{font-size:24px;font-weight:800;margin-bottom:6px;}
+.login-box p{font-size:13px;color:#64748b;margin-bottom:28px;}
+.lf{margin-bottom:16px;}
+.lf label{display:block;font-size:12px;font-weight:700;color:#374151;margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px;}
+.lf input,.lf select{width:100%;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:var(--r-sm);font-size:14px;font-family:'Nunito',sans-serif;transition:all .2s;background:#f9fafb;}
+.lf input:focus,.lf select:focus{outline:none;border-color:var(--navy);background:white;box-shadow:0 0 0 3px rgba(11,31,94,.1);}
+.login-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:white;border:none;border-radius:var(--r-sm);font-size:15px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s;margin-top:8px;}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(11,31,94,.3);}
+.login-hint{margin-top:16px;padding:12px;background:#f0fdf4;border:1px solid #a7f3d0;border-radius:var(--r-sm);font-size:12px;color:#065f46;font-weight:600;}
+.field-err{border-color:var(--red)!important;background:#fff5f5!important;}
+.err-msg{font-size:11px;color:var(--red);margin-top:4px;font-weight:600;}
+
+/* APP SHELL */
+#appShell{display:none;min-height:100vh;}
+
+/* SIDEBAR */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:232px;background:var(--navy);display:flex;flex-direction:column;z-index:100;box-shadow:4px 0 24px rgba(0,0,0,.2);}
+.sb-logo{padding:20px 18px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sb-logo-wrap{display:flex;align-items:center;gap:10px;}
+.sb-mark{width:36px;height:36px;background:linear-gradient(135deg,var(--teal),#06b6d4);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:white;}
+.sb-name{font-size:14px;font-weight:800;color:white;}
+.sb-sub{font-size:10px;color:rgba(255,255,255,.4);font-weight:500;}
+.sb-nav{flex:1;padding:12px 10px;overflow-y:auto;}
+.sb-sec{font-size:9px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:rgba(255,255,255,.25);padding:12px 8px 5px;}
+.sb-item{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:9px;cursor:pointer;transition:all .2s;color:rgba(255,255,255,.55);font-size:13px;font-weight:600;margin-bottom:1px;}
+.sb-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9);}
+.sb-item.active{background:rgba(13,148,136,.2);color:#5eead4;}
+.sb-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0;}
+.sb-badge{margin-left:auto;background:var(--red);color:white;font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;font-family:'JetBrains Mono',monospace;}
+.sb-badge.purple{background:var(--purple);}
+.sb-user{padding:14px 18px;border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:10px;}
+.sb-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:white;flex-shrink:0;}
+.sb-uname{font-size:12px;font-weight:700;color:white;}
+.sb-urole{font-size:10px;color:rgba(255,255,255,.4);}
+
+/* MAIN */
+.main{margin-left:232px;min-height:100vh;display:flex;flex-direction:column;}
+.topbar{background:white;border-bottom:1px solid var(--border);padding:14px 28px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;box-shadow:var(--sh);}
+.tb-left h2{font-size:19px;font-weight:800;color:var(--navy);}
+.tb-left p{font-size:12px;color:#64748b;margin-top:1px;}
+.btn-create{background:linear-gradient(135deg,var(--teal),#0891b2);color:white;border:none;padding:10px 20px;border-radius:50px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;display:flex;align-items:center;gap:7px;transition:all .2s;box-shadow:0 4px 14px rgba(13,148,136,.3);}
+.btn-create:hover{transform:translateY(-2px);}
+.content{padding:24px 28px;flex:1;}
+.page{display:none;}
+.page.active{display:block;animation:fadeUp .25s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* SECTION LABELS */
+.sec-lbl{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.sec-lbl::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* STATUS CARDS */
+.status-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+.sc{background:white;border:1.5px solid var(--border);border-radius:var(--r);padding:22px 20px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;box-shadow:var(--sh);}
+.sc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;}
+.sc.s-pend::after{background:var(--red);}
+.sc.s-prog::after{background:var(--blue);}
+.sc.s-post::after{background:var(--purple);}
+.sc.s-done::after{background:var(--green);}
+.sc:hover,.sc.active{transform:translateY(-4px);box-shadow:var(--sh-lg);}
+.sc.s-pend:hover,.sc.s-pend.active{border-color:var(--red);}
+.sc.s-prog:hover,.sc.s-prog.active{border-color:var(--blue);}
+.sc.s-post:hover,.sc.s-post.active{border-color:var(--purple);}
+.sc.s-done:hover,.sc.s-done.active{border-color:var(--green);}
+.sc-icon{font-size:26px;margin-bottom:10px;}
+.sc-num{font-size:42px;font-weight:900;line-height:1;font-family:'JetBrains Mono',monospace;margin-bottom:4px;}
+.s-pend .sc-num{color:var(--red);}
+.s-prog .sc-num{color:var(--blue);}
+.s-post .sc-num{color:var(--purple);}
+.s-done .sc-num{color:var(--green);}
+.sc-lbl{font-size:13px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.8px;}
+.sc-sub{font-size:11px;color:#94a3b8;margin-top:5px;}
+
+/* TASK PANEL */
+.task-panel{display:none;background:white;border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:28px;overflow:hidden;box-shadow:var(--sh);animation:fadeUp .25s ease;}
+.task-panel.active{display:block;}
+.tp-head{padding:14px 20px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.tp-title{font-size:14px;font-weight:800;color:var(--navy);}
+.tp-close{background:none;border:none;font-size:18px;cursor:pointer;color:#94a3b8;padding:4px 8px;border-radius:6px;transition:all .2s;}
+.tp-close:hover{background:var(--border);}
+.t-row{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:all .15s;}
+.t-row:last-child{border-bottom:none;}
+.t-row:hover{background:var(--surface2);}
+.t-row-l{flex:1;}
+.t-title{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:5px;}
+.t-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:#64748b;}
+.t-row-r{display:flex;gap:8px;align-items:center;margin-left:14px;flex-shrink:0;}
+
+/* BADGES */
+.bdg{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.bdg-pend{background:#fef2f2;color:var(--red);border:1px solid #fecaca;}
+.bdg-prog{background:#eff6ff;color:var(--blue);border:1px solid #bfdbfe;}
+.bdg-post{background:#f5f3ff;color:var(--purple);border:1px solid #ddd6fe;}
+.bdg-done{background:#ecfdf5;color:var(--green);border:1px solid #a7f3d0;}
+.bdg-high{background:#fff7ed;color:var(--gold);border:1px solid #fed7aa;}
+.bdg-urg{background:#fef2f2;color:var(--red);border:1px solid #fecaca;}
+.bdg-norm{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;}
+.bdg-ca{background:var(--ca-bg);color:var(--ca);border:1px solid var(--ca-border);}
+.bdg-dist{background:var(--dist-bg);color:var(--dist);border:1px solid var(--dist-border);}
+.bdg-broke{background:var(--broke-bg);color:var(--broke);border:1px solid var(--broke-border);}
+
+/* QUICK STATS */
+.qs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
+.qs{background:white;border:1.5px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh);}
+.qs-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;margin-bottom:7px;}
+.qs-val{font-size:26px;font-weight:900;font-family:'JetBrains Mono',monospace;}
+
+/* VERTICAL CARDS */
+.vert-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
+.vert-card{background:white;border:2px solid var(--border);border-radius:var(--r);padding:22px;cursor:pointer;transition:all .25s;box-shadow:var(--sh);}
+.vert-card:hover,.vert-card.active{transform:translateY(-3px);box-shadow:var(--sh-lg);}
+.vert-card.v-ca:hover,.vert-card.v-ca.active{border-color:var(--ca);background:var(--ca-bg);}
+.vert-card.v-dist:hover,.vert-card.v-dist.active{border-color:var(--dist);background:var(--dist-bg);}
+.vert-card.v-broke:hover,.vert-card.v-broke.active{border-color:var(--broke);background:var(--broke-bg);}
+.vc-icon{font-size:32px;margin-bottom:10px;}
+.vc-name{font-size:16px;font-weight:800;color:var(--navy);margin-bottom:4px;}
+.vc-cnt{font-size:22px;font-weight:900;font-family:'JetBrains Mono',monospace;margin-bottom:6px;}
+.v-ca .vc-cnt{color:var(--ca);}
+.v-dist .vc-cnt{color:var(--dist);}
+.v-broke .vc-cnt{color:var(--broke);}
+.vc-sub{font-size:11px;color:#64748b;}
+
+/* MIS */
+.bc-row{display:flex;align-items:center;gap:6px;margin-bottom:18px;flex-wrap:wrap;font-size:12px;}
+.bc{color:#64748b;cursor:pointer;padding:4px 10px;border-radius:6px;font-weight:600;transition:all .2s;}
+.bc:hover{background:var(--border);color:var(--navy);}
+.bc.cur{color:var(--teal);font-weight:700;cursor:default;}
+.bc-sep{color:#cbd5e1;font-size:16px;}
+.mis-level{margin-bottom:20px;}
+
+/* BUBBLES */
+.bubbles-wrap{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:22px;}
+.bubble{width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;text-align:center;padding:10px;position:relative;box-shadow:0 4px 14px rgba(0,0,0,.12);}
+.bubble:hover,.bubble.active{transform:scale(1.12) translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.2);}
+.b-mf{background:linear-gradient(135deg,#1e40af,#3b82f6);}
+.b-pms{background:linear-gradient(135deg,#065f46,#10b981);}
+.b-aif{background:linear-gradient(135deg,#6b21a8,#a855f7);}
+.b-health{background:linear-gradient(135deg,#b45309,#f59e0b);}
+.b-life{background:linear-gradient(135deg,#9f1239,#f43f5e);}
+.b-gen{background:linear-gradient(135deg,#0e7490,#06b6d4);}
+.b-fd{background:linear-gradient(135deg,#1d4ed8,#6366f1);}
+.b-bank{background:linear-gradient(135deg,#15803d,#22c55e);}
+.b-tax{background:linear-gradient(135deg,#c2410c,#f97316);}
+.b-egold{background:linear-gradient(135deg,#854d0e,#eab308);}
+.b-gst{background:linear-gradient(135deg,#0f172a,#334155);}
+.b-itr{background:linear-gradient(135deg,#1e40af,#0ea5e9);}
+.b-audit{background:linear-gradient(135deg,#7c2d12,#ea580c);}
+.b-tds{background:linear-gradient(135deg,#14532d,#16a34a);}
+.b-acc{background:linear-gradient(135deg,#581c87,#9333ea);}
+.b-roc{background:linear-gradient(135deg,#0f172a,#475569);}
+.b-demat{background:linear-gradient(135deg,#1e3a5f,#2563eb);}
+.b-trade{background:linear-gradient(135deg,#374151,#6b7280);}
+.b-kyc{background:linear-gradient(135deg,#0c4a6e,#0ea5e9);}
+.b-dp{background:linear-gradient(135deg,#134e4a,#14b8a6);}
+.bubble-icon{font-size:20px;margin-bottom:4px;}
+.bubble-name{font-size:9px;font-weight:800;color:white;line-height:1.2;}
+.bubble-cnt{position:absolute;top:4px;right:4px;background:white;color:var(--navy);width:18px;height:18px;border-radius:50%;font-size:9px;font-weight:900;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;box-shadow:0 2px 6px rgba(0,0,0,.15);}
+
+/* TX CARDS */
+.tx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:20px;}
+.tx-card{background:white;border:1.5px solid var(--border);border-radius:var(--r);padding:18px;cursor:pointer;transition:all .2s;box-shadow:var(--sh);}
+.tx-card:hover,.tx-card.active{border-color:var(--teal);background:#f0fdf9;transform:translateY(-2px);}
+.tx-icon{font-size:22px;margin-bottom:8px;}
+.tx-name{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:3px;}
+.tx-desc{font-size:11px;color:#64748b;}
+.tx-cnt{display:inline-block;margin-top:8px;background:#ecfdf5;color:var(--teal2);padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;border:1px solid #a7f3d0;}
+
+/* NATURE CARDS */
+.nat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:20px;}
+.nat-card{background:white;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:14px;cursor:pointer;transition:all .2s;box-shadow:var(--sh);}
+.nat-card:hover,.nat-card.active{border-color:var(--navy);background:var(--surface2);}
+.nat-icon{font-size:18px;margin-bottom:6px;}
+.nat-name{font-size:12px;font-weight:700;color:var(--navy);}
+.nat-desc{font-size:10px;color:#64748b;margin-top:2px;}
+
+/* TASK TABLE */
+.tt-wrap{background:white;border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);}
+.tt-head{display:grid;grid-template-columns:2.5fr 1.5fr 1.2fr 1fr 1fr 0.7fr;padding:11px 18px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:#94a3b8;}
+.tt-row{display:grid;grid-template-columns:2.5fr 1.5fr 1.2fr 1fr 1fr 0.7fr;padding:14px 18px;border-bottom:1px solid var(--border);align-items:center;font-size:12px;cursor:pointer;transition:all .15s;}
+.tt-row:last-child{border-bottom:none;}
+.tt-row:hover{background:var(--surface2);}
+.tt-task{font-weight:700;color:var(--navy);font-size:13px;}
+.tt-client{color:#64748b;}
+.tt-link{color:var(--teal);font-weight:700;font-size:12px;cursor:pointer;}
+
+/* USERS PAGE */
+.users-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:24px;}
+.uc{background:white;border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);}
+.uc-top{padding:18px 18px 14px;display:flex;align-items:center;gap:12px;}
+.uc-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:white;flex-shrink:0;}
+.uc-name{font-size:14px;font-weight:800;color:var(--navy);}
+.uc-role{display:inline-block;margin-top:3px;padding:2px 9px;border-radius:20px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;}
+.r-admin{background:#fef3c7;color:#92400e;}
+.r-mgr{background:#eff6ff;color:#1d4ed8;}
+.r-rm{background:#f5f3ff;color:#6d28d9;}
+.r-bo{background:#ecfdf5;color:#065f46;}
+.r-kyc{background:#fff7ed;color:#c2410c;}
+.r-ca{background:#f0f9ff;color:#0369a1;}
+.uc-stats{padding:0 18px 16px;display:flex;gap:14px;align-items:center;}
+.uc-stat{text-align:center;}
+.uc-stat-v{font-size:20px;font-weight:900;color:var(--navy);font-family:'JetBrains Mono',monospace;}
+.uc-stat-l{font-size:9px;color:#94a3b8;margin-top:1px;font-weight:600;text-transform:uppercase;}
+.uc-div{width:1px;height:32px;background:var(--border);}
+
+/* FORM CARD */
+.form-card{background:white;border:1.5px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:24px;box-shadow:var(--sh);}
+.form-card h3{font-size:15px;font-weight:800;color:var(--navy);margin-bottom:18px;}
+
+/* MODALS */
+.overlay{display:none;position:fixed;inset:0;background:rgba(11,31,94,.5);z-index:200;backdrop-filter:blur(3px);align-items:center;justify-content:center;padding:20px;}
+.overlay.active{display:flex;}
+.modal{background:white;border-radius:20px;width:100%;max-width:660px;max-height:92vh;overflow-y:auto;box-shadow:0 32px 80px rgba(11,31,94,.3);animation:modalIn .3s ease;}
+.modal-lg{max-width:760px;}
+.modal-sm{max-width:480px;}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(16px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.mhead{padding:22px 26px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;position:sticky;top:0;background:white;z-index:10;}
+.mhead h2{font-size:18px;font-weight:800;color:var(--navy);}
+.mhead p{font-size:12px;color:#64748b;margin-top:3px;}
+.mclose{background:var(--surface2);border:1px solid var(--border);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:#94a3b8;transition:all .2s;flex-shrink:0;}
+.mclose:hover{background:var(--border);color:var(--navy);}
+
+/* STEPPER */
+.stepper{display:flex;padding:16px 26px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.stp{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;}
+.stp:not(:last-child)::after{content:'';position:absolute;top:13px;left:50%;width:100%;height:2px;background:var(--border);z-index:0;}
+.stp.done:not(:last-child)::after{background:var(--teal);}
+.stp-n{width:26px;height:26px;border-radius:50%;background:white;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;z-index:1;position:relative;transition:all .3s;font-family:'JetBrains Mono',monospace;}
+.stp.cur .stp-n{background:var(--navy);border-color:var(--navy);color:white;box-shadow:0 0 0 3px rgba(11,31,94,.15);}
+.stp.done .stp-n{background:var(--teal);border-color:var(--teal);color:white;}
+.stp-lbl{font-size:9px;font-weight:700;color:#94a3b8;margin-top:4px;text-align:center;text-transform:uppercase;letter-spacing:.4px;}
+.stp.cur .stp-lbl{color:var(--navy);}
+.stp.done .stp-lbl{color:var(--teal);}
+
+/* MODAL BODY */
+.mbody{padding:22px 26px;}
+.fstep{display:none;}
+.fstep.active{display:block;animation:fadeUp .25s ease;}
+.step-t{font-size:15px;font-weight:800;color:var(--navy);margin-bottom:3px;}
+.step-s{font-size:12px;color:#64748b;margin-bottom:18px;}
+
+/* OPTION GRID */
+.opt-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:18px;}
+.opt{background:var(--surface2);border:2px solid var(--border);border-radius:var(--r-sm);padding:14px 11px;text-align:center;cursor:pointer;transition:all .2s;}
+.opt:hover{border-color:var(--teal);transform:translateY(-2px);}
+.opt.sel{border-color:var(--teal);background:#f0fdf9;}
+.opt-icon{font-size:20px;margin-bottom:6px;}
+.opt-name{font-size:12px;font-weight:700;color:var(--navy);}
+.opt-desc{font-size:10px;color:#64748b;margin-top:2px;}
+
+/* SUB OPTIONS */
+.sub-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:9px;margin-bottom:18px;}
+.sub-opt{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:12px;cursor:pointer;transition:all .2s;display:flex;align-items:flex-start;gap:9px;}
+.sub-opt:hover{border-color:var(--navy2);}
+.sub-opt.sel{border-color:var(--navy);background:#f8f9ff;}
+.so-icon{font-size:16px;flex-shrink:0;}
+.so-name{font-size:12px;font-weight:700;color:var(--navy);}
+.so-desc{font-size:10px;color:#64748b;margin-top:1px;}
+
+/* FORM FIELDS */
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:#64748b;margin-bottom:5px;}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 13px;color:var(--navy);font-family:'Nunito',sans-serif;font-size:13px;transition:all .2s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.1);background:white;}
+.fg input.err,.fg select.err{border-color:var(--red)!important;}
+.fg textarea{resize:vertical;min-height:70px;}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.divlbl{font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);margin:18px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.req{color:var(--red);}
+
+/* SUBTASK ROW */
+.subtask-row{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-bottom:10px;position:relative;}
+.subtask-row-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.subtask-lbl{font-size:11px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.8px;}
+.subtask-remove{background:none;border:none;color:#94a3b8;cursor:pointer;font-size:16px;padding:2px 6px;border-radius:4px;transition:all .2s;}
+.subtask-remove:hover{background:var(--border);color:var(--red);}
+.add-subtask-btn{background:none;border:1.5px dashed var(--border);border-radius:var(--r-sm);padding:10px;width:100%;font-size:12px;font-weight:700;color:#94a3b8;cursor:pointer;transition:all .2s;font-family:'Nunito',sans-serif;margin-top:4px;}
+.add-subtask-btn:hover{border-color:var(--teal);color:var(--teal);}
+
+/* MODAL FOOTER */
+.mfoot{padding:16px 26px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;bottom:0;background:white;z-index:10;}
+.btn{padding:10px 20px;border-radius:var(--r-sm);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Nunito',sans-serif;border:none;display:flex;align-items:center;gap:6px;}
+.btn-ghost{background:var(--surface2);color:#64748b;border:1.5px solid var(--border);}
+.btn-ghost:hover{color:var(--navy);background:var(--border);}
+.btn-navy{background:var(--navy);color:white;box-shadow:0 4px 12px rgba(11,31,94,.25);}
+.btn-navy:hover{transform:translateY(-2px);background:var(--navy2);}
+.btn-teal{background:var(--teal);color:white;box-shadow:0 4px 12px rgba(13,148,136,.3);}
+.btn-teal:hover{transform:translateY(-2px);}
+.btn-red{background:var(--red);color:white;}
+.btn-red:hover{transform:translateY(-2px);}
+.btn-gold{background:var(--gold);color:white;}
+
+/* TASK DETAIL */
+.det-sec{margin-bottom:20px;}
+.det-sec h4{font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+.det-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;}
+.di{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 13px;}
+.di-l{font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:3px;}
+.di-v{font-size:13px;font-weight:700;color:var(--navy);}
+
+/* STAGES BAR */
+.stages-bar{display:flex;margin-bottom:20px;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--border);}
+.stg{flex:1;padding:12px 8px;text-align:center;background:var(--surface2);border-right:1px solid var(--border);transition:all .3s;}
+.stg:last-child{border-right:none;}
+.stg.done{background:#ecfdf5;border-bottom:3px solid var(--green);}
+.stg.cur{background:#eff6ff;border-bottom:3px solid var(--blue);box-shadow:0 2px 8px rgba(37,99,235,.15);}
+.stg-n{font-size:9px;font-weight:700;color:#94a3b8;font-family:'JetBrains Mono',monospace;}
+.stg.done .stg-n{color:var(--green);}
+.stg.cur .stg-n{color:var(--blue);font-weight:900;}
+.stg-label{font-size:10px;font-weight:700;color:#94a3b8;margin-top:2px;}
+.stg.done .stg-label{color:var(--green);}
+.stg.cur .stg-label{color:var(--blue);font-weight:900;}
+
+/* STAGE 3 CONFIRMATION RECORD */
+.s3-record{background:#ecfdf5;border:1px solid #a7f3d0;border-radius:var(--r-sm);padding:13px;margin-bottom:14px;}
+.s3-record-head{font-size:10px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+.s3-record-body{font-size:12px;color:#065f46;}
+
+/* POST-SALES TEMPLATE */
+.ps-box{background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:var(--r-sm);padding:16px;margin-bottom:14px;}
+.ps-box h5{font-size:10px;font-weight:800;color:var(--purple);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+
+/* PROOF BOX */
+.proof-box{background:var(--surface2);border:2px dashed var(--border);border-radius:var(--r-sm);padding:18px;text-align:center;font-size:12px;color:#64748b;cursor:pointer;transition:all .2s;position:relative;}
+.proof-box:hover{border-color:var(--teal);color:var(--teal);background:#f0fdf9;}
+.proof-box input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.proof-uploaded{background:#ecfdf5;border:1.5px solid #a7f3d0;border-radius:var(--r-sm);padding:12px;font-size:12px;color:var(--green);font-weight:600;display:flex;align-items:center;gap:8px;}
+
+/* NOTES */
+.note{padding:10px 13px;border-radius:var(--r-sm);font-size:12px;font-weight:600;display:flex;align-items:flex-start;gap:8px;margin-top:10px;}
+.note-blue{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;}
+.note-green{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;}
+.note-orange{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;}
+
+/* ACTIONS */
+.act-row{display:flex;gap:9px;flex-wrap:wrap;}
+
+/* SEND BACK MODAL */
+.sendback-reason{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--navy);resize:vertical;min-height:100px;transition:all .2s;}
+.sendback-reason:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(220,38,38,.1);background:white;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--navy);color:white;padding:12px 22px;border-radius:50px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:all .3s ease;pointer-events:none;box-shadow:0 8px 32px rgba(11,31,94,.3);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.success{background:var(--green);}
+.toast.error{background:var(--red);}
+
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:#94a3b8;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-mark">SL</div>
+      <div><div class="login-logo-text">Second Level Think</div><div class="login-logo-sub">Unified Task Management Platform</div></div>
+    </div>
+    <h2>Welcome Back</h2>
+    <p>Sign in to access your task dashboard</p>
+    <div class="lf"><label>Username <span class="req">*</span></label><input type="text" id="loginUser" placeholder="Enter username"></div>
+    <div class="lf"><label>Login As (Demo Role)</label>
+      <select id="loginRole">
+        <option value="admin">Admin / Partner</option>
+        <option value="mgr">Operations Manager</option>
+        <option value="rm">Relationship Manager</option>
+        <option value="bo">Back Office Operator</option>
+        <option value="kyc">KYC Executive</option>
+      </select>
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign In →</button>
+    <div class="login-hint">🔐 Pilot mode — enter any username and select role to proceed.</div>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div id="appShell">
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-wrap">
+        <div class="sb-mark">SL</div>
+        <div><div class="sb-name">Second Level Think</div><div class="sb-sub">Unified Task Platform</div></div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-sec">Main</div>
+      <div class="sb-item active" id="nav-dashboard" onclick="showPage('dashboard',this)"><span class="sb-icon">📊</span><span>Dashboard</span></div>
+      <div class="sb-item" id="nav-mis" onclick="showPage('mis',this)"><span class="sb-icon">🔍</span><span>MIS Reports</span></div>
+      <div class="sb-sec">Tasks</div>
+      <div class="sb-item" onclick="filterStatus('pending')"><span class="sb-icon">⏳</span><span>Pending</span><span class="sb-badge" id="badge-pending">0</span></div>
+      <div class="sb-item" onclick="filterStatus('inprogress')"><span class="sb-icon">⚡</span><span>In Progress</span><span class="sb-badge" id="badge-inprogress">0</span></div>
+      <div class="sb-item" onclick="filterStatus('postsales')"><span class="sb-icon">🔁</span><span>Post-Sales F/U</span><span class="sb-badge purple" id="badge-postsales">0</span></div>
+      <div class="sb-item" onclick="filterStatus('done')"><span class="sb-icon">✅</span><span>Completed</span></div>
+      <div class="sb-sec">Admin</div>
+      <div class="sb-item" id="nav-users" onclick="showPage('users',this)"><span class="sb-icon">👥</span><span>User Management</span></div>
+      <div class="sb-item" onclick="showToast('⚙️ Settings — Phase 2')"><span class="sb-icon">⚙️</span><span>Settings</span></div>
+      <div class="sb-item" onclick="doLogout()"><span class="sb-icon">🚪</span><span>Logout</span></div>
+    </nav>
+    <div class="sb-user">
+      <div class="sb-av" id="sbAv" style="background:linear-gradient(135deg,#1e40af,#3b82f6)">AD</div>
+      <div><div class="sb-uname" id="sbName">Admin</div><div class="sb-urole" id="sbRole">Administrator</div></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="tb-left"><h2 id="tbTitle">Dashboard</h2><p id="tbSub">Welcome back — unified task overview across all verticals</p></div>
+      <div><button class="btn-create" onclick="openCreate()">＋ Create New Task</button></div>
+    </div>
+    <div class="content">
+
+      <!-- DASHBOARD PAGE -->
+      <div class="page active" id="page-dashboard">
+        <div class="sec-lbl">Task Status Overview — All Verticals</div>
+        <div class="status-grid">
+          <div class="sc s-pend" onclick="togglePanel('pending',this)">
+            <div class="sc-icon">⏳</div><div class="sc-num" id="cnt-pending">0</div>
+            <div class="sc-lbl">Pending</div><div class="sc-sub">Awaiting action · click to expand</div>
+          </div>
+          <div class="sc s-prog" onclick="togglePanel('inprogress',this)">
+            <div class="sc-icon">⚡</div><div class="sc-num" id="cnt-inprogress">0</div>
+            <div class="sc-lbl">In Progress</div><div class="sc-sub">Being worked on · click to expand</div>
+          </div>
+          <div class="sc s-post" onclick="togglePanel('postsales',this)">
+            <div class="sc-icon">🔁</div><div class="sc-num" id="cnt-postsales">0</div>
+            <div class="sc-lbl">Post-Sales F/U</div><div class="sc-sub">Awaiting fulfillment confirmation</div>
+          </div>
+          <div class="sc s-done" onclick="togglePanel('done',this)">
+            <div class="sc-icon">✅</div><div class="sc-num" id="cnt-done">0</div>
+            <div class="sc-lbl">Completed</div><div class="sc-sub">Verified & fully closed</div>
+          </div>
+        </div>
+        <div class="task-panel" id="taskPanel">
+          <div class="tp-head"><span class="tp-title" id="panelTitle">Tasks</span><button class="tp-close" onclick="closePanel()">✕</button></div>
+          <div id="panelList"></div>
+        </div>
+        <div class="sec-lbl">Today's Snapshot</div>
+        <div class="qs-grid">
+          <div class="qs"><div class="qs-lbl">Created Today</div><div class="qs-val" style="color:var(--navy)" id="snap-created">0</div></div>
+          <div class="qs"><div class="qs-lbl">Completed Today</div><div class="qs-val" style="color:var(--green)" id="snap-done">0</div></div>
+          <div class="qs"><div class="qs-lbl">Overdue Tasks</div><div class="qs-val" style="color:var(--red)" id="snap-overdue">0</div></div>
+          <div class="qs"><div class="qs-lbl">Renewals Due (30d)</div><div class="qs-val" style="color:var(--gold)" id="snap-renewals">0</div></div>
+        </div>
+        <div class="sec-lbl">Active Tasks by Vertical</div>
+        <div class="vert-grid">
+          <div class="vert-card v-ca" onclick="goMIS('ca')"><div class="vc-icon">🏛️</div><div class="vc-name">CA Practice</div><div class="vc-cnt" id="vc-ca">0</div><div class="vc-sub">GST · ITR · Audit · Compliance</div></div>
+          <div class="vert-card v-dist" onclick="goMIS('dist')"><div class="vc-icon">💹</div><div class="vc-name">Financial Distribution</div><div class="vc-cnt" id="vc-dist">0</div><div class="vc-sub">MF · Insurance · PMS · AIF · FD · Banking</div></div>
+          <div class="vert-card v-broke" onclick="goMIS('broke')"><div class="vc-icon">📈</div><div class="vc-name">Broking Services</div><div class="vc-cnt" id="vc-broke">0</div><div class="vc-sub">Account Opening · Trade Support · KYC</div></div>
+        </div>
+      </div>
+
+      <!-- MIS PAGE -->
+      <div class="page" id="page-mis">
+        <div class="sec-lbl">MIS — Drill-Down by Vertical & Product</div>
+        <div class="bc-row" id="bcRow"></div>
+        <div id="misContent"></div>
+      </div>
+
+      <!-- USERS PAGE -->
+      <div class="page" id="page-users">
+        <div class="sec-lbl">User Management</div>
+        <div class="form-card">
+          <h3>➕ Create New User</h3>
+          <div class="fg-row">
+            <div class="fg"><label>Full Name <span class="req">*</span></label><input type="text" id="newName" placeholder="Employee full name"></div>
+            <div class="fg"><label>Email ID <span class="req">*</span></label><input type="email" id="newEmail" placeholder="employee@company.com"></div>
+          </div>
+          <div class="fg-row">
+            <div class="fg"><label>Mobile Number</label><input type="tel" id="newMobile" placeholder="10-digit mobile"></div>
+            <div class="fg"><label>Assign Role <span class="req">*</span></label>
+              <select id="newRole">
+                <option value="">— Select Role —</option>
+                <option>Admin / Partner</option>
+                <option>Operations Manager</option>
+                <option>Relationship Manager (RM)</option>
+                <option>Back Office Operator</option>
+                <option>KYC Executive</option>
+                <option>CA / Tax Specialist</option>
+              </select>
+            </div>
+          </div>
+          <div class="fg-row">
+            <div class="fg"><label>Vertical Access</label>
+              <select id="newVertical">
+                <option>All Verticals</option>
+                <option>CA Practice Only</option>
+                <option>Financial Distribution Only</option>
+                <option>Broking Services Only</option>
+              </select>
+            </div>
+            <div class="fg"><label>Reports To</label>
+              <select id="newReportsTo"><option>Admin Partner</option><option>Operations Manager</option></select>
+            </div>
+          </div>
+          <button class="btn btn-navy" onclick="createUser()">Create User</button>
+        </div>
+        <div class="sec-lbl">Current Team Members</div>
+        <div class="users-grid" id="usersGrid"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- CREATE TASK MODAL -->
+<div class="overlay" id="createOverlay">
+  <div class="modal">
+    <div class="mhead">
+      <div><h2>Create New Task</h2><p id="createSub">Follow the guided steps to create and assign</p></div>
+      <button class="mclose" onclick="closeCreate()">✕</button>
+    </div>
+    <div class="stepper">
+      <div class="stp cur" id="sd1"><div class="stp-n">1</div><div class="stp-lbl">Vertical</div></div>
+      <div class="stp" id="sd2"><div class="stp-n">2</div><div class="stp-lbl">Category</div></div>
+      <div class="stp" id="sd3"><div class="stp-n">3</div><div class="stp-lbl">Nature</div></div>
+      <div class="stp" id="sd4"><div class="stp-n">4</div><div class="stp-lbl">TX Type</div></div>
+      <div class="stp" id="sd5"><div class="stp-n">5</div><div class="stp-lbl">Client</div></div>
+      <div class="stp" id="sd6"><div class="stp-n">6</div><div class="stp-lbl">Assign</div></div>
+    </div>
+    <div class="mbody">
+      <div class="fstep active" id="cs1">
+        <div class="step-t">Which business vertical is this task for?</div>
+        <div class="step-s">Select the vertical to load relevant categories</div>
+        <div class="opt-g">
+          <div class="opt" id="o-ca" onclick="selOpt('vert','ca',this)"><div class="opt-icon">🏛️</div><div class="opt-name">CA Practice</div><div class="opt-desc">GST, ITR, Audit, Compliance</div></div>
+          <div class="opt" id="o-dist" onclick="selOpt('vert','dist',this)"><div class="opt-icon">💹</div><div class="opt-name">Financial Distribution</div><div class="opt-desc">MF, Insurance, PMS, AIF, FD, eGold</div></div>
+          <div class="opt" id="o-broke" onclick="selOpt('vert','broke',this)"><div class="opt-icon">📈</div><div class="opt-name">Broking Services</div><div class="opt-desc">Demat, Trade Support</div></div>
+        </div>
+      </div>
+      <div class="fstep" id="cs2">
+        <div class="step-t">Select the product / work category</div>
+        <div class="step-s">Based on your vertical selection</div>
+        <div class="opt-g" id="catGrid"></div>
+      </div>
+      <div class="fstep" id="cs3">
+        <div class="step-t">What is the nature of this transaction?</div>
+        <div class="step-s">Select the specific transaction type</div>
+        <div class="sub-g" id="natureGrid"></div>
+        <!-- SIP date field — shown only when SIP selected -->
+        <div id="sipDateWrap" style="display:none">
+          <div class="divlbl">SIP Schedule Details</div>
+          <div class="fg-row">
+            <div class="fg"><label>SIP Frequency</label>
+              <select id="sipFreq" onchange="toggleSipDate()">
+                <option value="monthly">Monthly</option>
+                <option value="weekly">Weekly</option>
+              </select>
+            </div>
+            <div class="fg" id="sipMonthWrap"><label>Date of Month <span class="req">*</span></label>
+              <select id="sipMonthDate">
+                <option>1st</option><option>5th</option><option>7th</option><option>10th</option>
+                <option>15th</option><option>20th</option><option>25th</option><option>28th</option>
+              </select>
+            </div>
+            <div class="fg" id="sipWeekWrap" style="display:none"><label>Day of Week <span class="req">*</span></label>
+              <select id="sipWeekDay">
+                <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+                <option>Thursday</option><option>Friday</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="fstep" id="cs4">
+        <div class="step-t">Is this Financial or Non-Financial?</div>
+        <div class="step-s">This determines the post-sales follow-up requirement</div>
+        <div class="opt-g">
+          <div class="opt" id="o-ft" onclick="selOpt('txcat','ft',this)"><div class="opt-icon">💰</div><div class="opt-name">Financial Transaction</div><div class="opt-desc">Requires post-sales confirmation</div></div>
+          <div class="opt" id="o-nft" onclick="selOpt('txcat','nft',this)"><div class="opt-icon">📁</div><div class="opt-name">Non-Financial / Back Office</div><div class="opt-desc">KYC updates, reports, support</div></div>
+        </div>
+        <div class="note note-blue">ℹ️ Financial transactions automatically create a Post-Sales Follow-Up task after Stage 3 confirmation — to verify folio, policy, account details etc.</div>
+      </div>
+      <div class="fstep" id="cs5">
+        <div class="step-t">Client Information</div>
+        <div class="step-s">Inline capture — no client master required at this stage</div>
+        <div class="fg-row">
+          <div class="fg"><label>Client Full Name <span class="req">*</span></label><input type="text" id="cName" placeholder="e.g. Ramesh Kumar Sharma"></div>
+          <div class="fg"><label>Father's / Spouse Name</label><input type="text" id="cFather" placeholder="e.g. Suresh Kumar Sharma"></div>
+        </div>
+        <div class="fg-row">
+          <div class="fg"><label>Mobile Number <span class="req">*</span></label><input type="tel" id="cMobile" placeholder="10-digit mobile"></div>
+          <div class="fg"><label>Email ID</label><input type="email" id="cEmail" placeholder="client@email.com"></div>
+        </div>
+        <div class="note note-orange">📌 Stored against this task for identification. Full client master in Phase 2.</div>
+      </div>
+      <div class="fstep" id="cs6">
+        <div class="step-t">Task Details, Assignment & Subtasks</div>
+        <div class="step-s">Define the task, assign to team member, and optionally break into subtasks</div>
+        <div class="fg"><label>Task Title <span class="req">*</span></label><input type="text" id="tTitle" placeholder="Clear, concise task title"></div>
+        <div class="fg"><label>Description / Instructions for Assignee</label><textarea id="tDesc" placeholder="Specific instructions, client context, special notes..."></textarea></div>
+        <div class="divlbl">Assignment & Schedule</div>
+        <div class="fg-row">
+          <div class="fg"><label>Assign To <span class="req">*</span></label>
+            <select id="tAssign"><option value="">— Select team member —</option></select>
+          </div>
+          <div class="fg"><label>Due Date <span class="req">*</span></label><input type="date" id="tDue"></div>
+        </div>
+        <div class="fg-row">
+          <div class="fg"><label>Priority</label><select id="tPri"><option>Normal</option><option>High</option><option>Urgent</option></select></div>
+          <div class="fg"><label>Proof Required?</label><select id="tProof"><option>Yes — Mandatory</option><option>Yes — Optional</option><option>No</option></select></div>
+        </div>
+        <div class="divlbl">Subtasks (Optional — break this task into steps)</div>
+        <div id="subtasksList"></div>
+        <button class="add-subtask-btn" onclick="addSubtask()">＋ Add Subtask</button>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-ghost" id="backBtn" onclick="prevStep()" style="display:none">← Back</button>
+      <div style="display:flex;gap:9px;margin-left:auto;">
+        <button class="btn btn-ghost" onclick="closeCreate()">Cancel</button>
+        <button class="btn btn-navy" id="nextBtn" onclick="nextStep()">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TASK DETAIL MODAL -->
+<div class="overlay" id="detailOverlay">
+  <div class="modal modal-lg">
+    <div class="mhead">
+      <div><h2 id="dTitle">Task Details</h2><p id="dSub">View, verify and manage</p></div>
+      <button class="mclose" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="mbody">
+      <div class="det-sec">
+        <h4>Task Lifecycle — Current Stage</h4>
+        <div class="stages-bar" id="stagesBar"></div>
+      </div>
+      <div class="det-sec">
+        <h4>Transaction Information</h4>
+        <div class="det-grid">
+          <div class="di"><div class="di-l">Vertical</div><div class="di-v" id="d-vert">—</div></div>
+          <div class="di"><div class="di-l">Category / Product</div><div class="di-v" id="d-cat">—</div></div>
+          <div class="di"><div class="di-l">Nature</div><div class="di-v" id="d-nat">—</div></div>
+          <div class="di"><div class="di-l">TX Type</div><div class="di-v" id="d-txtype">—</div></div>
+          <div class="di"><div class="di-l">Current Status</div><div class="di-v" id="d-status">—</div></div>
+          <div class="di"><div class="di-l">Priority</div><div class="di-v" id="d-pri">—</div></div>
+        </div>
+      </div>
+      <div class="det-sec">
+        <h4>Client Details</h4>
+        <div class="det-grid">
+          <div class="di"><div class="di-l">Client Name</div><div class="di-v" id="d-cname">—</div></div>
+          <div class="di"><div class="di-l">Father's Name</div><div class="di-v" id="d-cfather">—</div></div>
+          <div class="di"><div class="di-l">Mobile</div><div class="di-v" id="d-cmobile">—</div></div>
+          <div class="di"><div class="di-l">Email</div><div class="di-v" id="d-cemail">—</div></div>
+        </div>
+      </div>
+      <div class="det-sec">
+        <h4>Assignment</h4>
+        <div class="det-grid">
+          <div class="di"><div class="di-l">Assigned To</div><div class="di-v" id="d-assigned">—</div></div>
+          <div class="di"><div class="di-l">Due Date</div><div class="di-v" id="d-due">—</div></div>
+          <div class="di"><div class="di-l">Proof Required</div><div class="di-v" id="d-proof">—</div></div>
+          <div class="di"><div class="di-l">Created By</div><div class="di-v" id="d-created">—</div></div>
+        </div>
+      </div>
+      <!-- Stage 3 Confirmation Record (shown only after stage 3) -->
+      <div class="det-sec" id="s3RecordSection" style="display:none">
+        <h4>Stage 3 — Confirmation Record</h4>
+        <div class="s3-record">
+          <div class="s3-record-head">✅ Confirmed</div>
+          <div class="s3-record-body" id="s3RecordBody">—</div>
+        </div>
+      </div>
+      <div class="det-sec" id="proofSection">
+        <h4>Stage 2 Proof — Payment / Action Evidence</h4>
+        <div id="proofContent">
+          <div class="proof-box">📎 Upload proof — payment screenshot, submission confirmation, reference number<input type="file" onchange="handleProofUpload(this,'stage2proof')"></div>
+        </div>
+      </div>
+      <div class="det-sec" id="psSection" style="display:none">
+        <h4>Stage 4 — Post-Sales Fulfillment Template</h4>
+        <div class="ps-box">
+          <h5 id="psTitle">Fulfillment Details</h5>
+          <div id="psFields"></div>
+        </div>
+        <div class="proof-box">📎 Upload fulfillment document — Policy, Folio statement, NAV confirmation, etc.<input type="file" onchange="handleProofUpload(this,'stage4doc')"></div>
+      </div>
+      <div class="det-sec">
+        <h4>Manager Actions</h4>
+        <div class="act-row" id="actRow"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SEND BACK MODAL -->
+<div class="overlay" id="sendbackOverlay">
+  <div class="modal modal-sm">
+    <div class="mhead">
+      <div><h2>Send Back for Revision</h2><p>Provide a reason so the assignee knows what to fix</p></div>
+      <button class="mclose" onclick="closeSendback()">✕</button>
+    </div>
+    <div class="mbody">
+      <div class="fg"><label>Reason / Rework Instructions <span class="req">*</span></label>
+        <textarea class="sendback-reason" id="sendbackReason" placeholder="e.g. Proof screenshot is blurry — please upload a clearer image. Also confirm the exact amount paid by client."></textarea>
+      </div>
+      <div class="note note-orange">⚠️ The assignee will be notified and the task will return to In Progress status.</div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-ghost" onclick="closeSendback()">Cancel</button>
+      <button class="btn btn-red" onclick="confirmSendback()">↩ Send Back</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════ MASTER DATA ═══════════════
+const CATEGORIES = {
+  ca:[
+    {id:'gst',icon:'📋',name:'GST Returns',cls:'b-gst'},
+    {id:'itr',icon:'📑',name:'ITR Filing',cls:'b-itr'},
+    {id:'audit',icon:'🔍',name:'Tax / Stat Audit',cls:'b-audit'},
+    {id:'tds',icon:'📊',name:'TDS Filing',cls:'b-tds'},
+    {id:'acc',icon:'📒',name:'Accounting / Bookkeeping',cls:'b-acc'},
+    {id:'roc',icon:'🏛️',name:'ROC / MCA Filings',cls:'b-roc'},
+  ],
+  dist:[
+    {id:'mf',icon:'💹',name:'Mutual Funds',cls:'b-mf'},
+    {id:'pms',icon:'📊',name:'PMS',cls:'b-pms'},
+    {id:'aif',icon:'🏦',name:'AIF',cls:'b-aif'},
+    {id:'health',icon:'🏥',name:'Health Insurance',cls:'b-health'},
+    {id:'life',icon:'🛡️',name:'Life Insurance',cls:'b-life'},
+    {id:'gen',icon:'📋',name:'General Insurance',cls:'b-gen'},
+    {id:'fd',icon:'🏛️',name:'Corporate FD',cls:'b-fd'},
+    {id:'bank',icon:'💳',name:'Banking Products',cls:'b-bank'},
+    {id:'tax',icon:'📑',name:'Tax & Compliance',cls:'b-tax'},
+    {id:'egold',icon:'🥇',name:'eGold / eSilver',cls:'b-egold'},
+  ],
+  broke:[
+    {id:'demat',icon:'📈',name:'Demat Account',cls:'b-demat'},
+    {id:'trade',icon:'⚡',name:'Trade Support',cls:'b-trade'},
+    {id:'bkyc',icon:'📋',name:'KYC / Onboarding',cls:'b-kyc'},
+    {id:'dp',icon:'🏦',name:'DP Services',cls:'b-dp'},
+  ]
+};
+
+const NATURES = {
+  gst:[{i:'📅',n:'Monthly GSTR-1',d:'Outward supply return'},{i:'📅',n:'Monthly GSTR-3B',d:'Summary return'},{i:'📊',n:'Annual GSTR-9',d:'Annual return'},{i:'🔍',n:'GST Audit GSTR-9C',d:'Reconciliation statement'},{i:'🆕',n:'New GST Registration',d:'Fresh GST number'}],
+  itr:[{i:'👤',n:'Individual ITR-1/2',d:'Salaried / capital gains'},{i:'💼',n:'Business ITR-3/4',d:'Business income'},{i:'🏢',n:'Corporate ITR-6',d:'Company return'}],
+  audit:[{i:'🔍',n:'Tax Audit (3CD)',d:'Section 44AB'},{i:'📋',n:'Statutory Audit',d:'Companies Act'},{i:'📊',n:'Internal Audit',d:'Process review'}],
+  tds:[{i:'📑',n:'TDS Return Filing',d:'Quarterly returns'},{i:'📋',n:'TDS Certificate',d:'Form 16/16A'}],
+  acc:[{i:'📒',n:'Monthly Bookkeeping',d:'Account maintenance'},{i:'📊',n:'Financial Statements',d:'P&L, Balance Sheet'},{i:'💼',n:'Payroll Processing',d:'Monthly salary'}],
+  roc:[{i:'📋',n:'Annual Return (MGT-7)',d:'Company annual filing'},{i:'📑',n:'Financial Statements (AOC-4)',d:'Form filing'},{i:'🆕',n:'Company Incorporation',d:'New company setup'}],
+  mf:[{i:'💵',n:'Lump Sum Purchase',d:'One-time buy'},{i:'📅',n:'SIP Registration',d:'Regular investment',sip:true},{i:'🔄',n:'STP Registration',d:'Systematic transfer'},{i:'💸',n:'Lump Sum Redemption',d:'One-time withdrawal'},{i:'🗓️',n:'SWP Registration',d:'Regular withdrawal'},{i:'🔀',n:'Switch Transaction',d:'Change scheme'}],
+  pms:[{i:'💵',n:'New Onboarding',d:'Fresh PMS investment'},{i:'💸',n:'Redemption / Exit',d:'Exit from PMS'}],
+  aif:[{i:'💵',n:'New Investment',d:'Fresh AIF commitment'},{i:'💸',n:'Redemption',d:'Exit from AIF'}],
+  health:[{i:'🆕',n:'New Policy Purchase',d:'Fresh health cover'},{i:'🔄',n:'Policy Renewal',d:'Renew existing'},{i:'🔔',n:'Renewal Reminder',d:'Upcoming renewal'},{i:'❓',n:'Service Query',d:'Policy query'},{i:'📋',n:'Claim Assistance',d:'Claims support'}],
+  life:[{i:'🆕',n:'New Policy Purchase',d:'Term / ULIP / Endowment'},{i:'🔄',n:'Policy Renewal',d:'Renew existing'},{i:'🔔',n:'Renewal Reminder',d:'Upcoming renewal'},{i:'❓',n:'Service Query',d:'Policy query'},{i:'📋',n:'Claim Assistance',d:'Claims support'}],
+  gen:[{i:'🆕',n:'New Policy Purchase',d:'Motor / Home / Travel'},{i:'🔄',n:'Policy Renewal',d:'Renew existing'},{i:'🔔',n:'Renewal Reminder',d:'Upcoming renewal'},{i:'❓',n:'Service Query',d:'Policy query'}],
+  fd:[{i:'💵',n:'New FD Booking',d:'Fresh fixed deposit'},{i:'🔄',n:'FD Renewal',d:'Roll over on maturity'},{i:'🔔',n:'Maturity Reminder',d:'FD maturity alert'}],
+  bank:[{i:'🏦',n:'Account Opening',d:'Current / Savings'},{i:'💳',n:'Credit Card Application',d:'New card'},{i:'🤝',n:'Loan Application',d:'Personal / Business loan'},{i:'❓',n:'Service Query',d:'Banking query'}],
+  tax:[{i:'📑',n:'ITR Filing',d:'Income tax return'},{i:'📒',n:'Bookkeeping',d:'Account maintenance'},{i:'📊',n:'Capital Gain Report',d:'CG for ITR filing'}],
+  egold:[{i:'💵',n:'Lump Sum Purchase',d:'One-time eGold/eSilver buy'},{i:'📅',n:'SIP Purchase',d:'Regular eGold/eSilver SIP',sip:true},{i:'💸',n:'Withdrawal / Redemption',d:'Redeem eGold/eSilver'}],
+  demat:[{i:'🆕',n:'New Demat Account',d:'Fresh account opening'},{i:'➕',n:'Segment Addition',d:'Add F&O / Currency'}],
+  trade:[{i:'❓',n:'Trade Query',d:'Support for trades'},{i:'🔐',n:'Platform Issue',d:'Login / access'}],
+  bkyc:[{i:'👤',n:'KYC Verification',d:'New client KYC'},{i:'🔄',n:'KYC Update',d:'Update existing KYC'}],
+  dp:[{i:'📋',n:'DP Services Query',d:'Demat services'},{i:'📄',n:'Statement Request',d:'Holdings statement'}],
+};
+
+const PS_TEMPLATES = {
+  mf_purchase:`<div class="fg-row"><div class="fg"><label>Folio Number <span class="req">*</span></label><input type="text" id="ps-folio" placeholder="e.g. 12345678/99"></div><div class="fg"><label>Units Allotted <span class="req">*</span></label><input type="text" id="ps-units" placeholder="e.g. 245.678"></div></div><div class="fg-row"><div class="fg"><label>NAV at Allotment <span class="req">*</span></label><input type="text" id="ps-nav" placeholder="e.g. ₹ 48.25"></div><div class="fg"><label>Allotment Date <span class="req">*</span></label><input type="date" id="ps-date"></div></div><div class="fg"><label>Transaction Reference No.</label><input type="text" id="ps-ref" placeholder="AMC reference number"></div>`,
+  mf_redemption:`<div class="fg-row"><div class="fg"><label>Folio Number <span class="req">*</span></label><input type="text" id="ps-folio" placeholder="e.g. 12345678/99"></div><div class="fg"><label>Units Redeemed <span class="req">*</span></label><input type="text" id="ps-units" placeholder="e.g. 100.000"></div></div><div class="fg-row"><div class="fg"><label>NAV at Redemption <span class="req">*</span></label><input type="text" id="ps-nav" placeholder="e.g. ₹ 52.10"></div><div class="fg"><label>Amount Credited ₹</label><input type="text" id="ps-amount" placeholder="Net amount"></div></div>`,
+  pms:`<div class="fg-row"><div class="fg"><label>Client Account Number <span class="req">*</span></label><input type="text" id="ps-acc" placeholder="PMS account number"></div><div class="fg"><label>Demat Account Number <span class="req">*</span></label><input type="text" id="ps-demat" placeholder="DP ID + Client ID"></div></div><div class="fg-row"><div class="fg"><label>Client Portal Login ID</label><input type="text" id="ps-login" placeholder="Portal username"></div><div class="fg"><label>Temporary Password</label><input type="password" id="ps-pass" placeholder="Initial password"></div></div>`,
+  aif:`<div class="fg-row"><div class="fg"><label>Client Account / Folio No. <span class="req">*</span></label><input type="text" id="ps-acc" placeholder="AIF account number"></div><div class="fg"><label>Demat Account No.</label><input type="text" id="ps-demat" placeholder="DP ID + Client ID"></div></div><div class="fg-row"><div class="fg"><label>Fund Portal Login ID</label><input type="text" id="ps-login" placeholder="Fund manager portal login"></div><div class="fg"><label>Contribution Amount ₹</label><input type="text" id="ps-amount" placeholder="Amount invested"></div></div>`,
+  insurance:`<div class="fg-row"><div class="fg"><label>Policy Number <span class="req">*</span></label><input type="text" id="ps-policy" placeholder="e.g. HDFC-LIFE-12345678"></div><div class="fg"><label>Policy Issuance Date <span class="req">*</span></label><input type="date" id="ps-issued"></div></div><div class="fg-row"><div class="fg"><label>Coverage From <span class="req">*</span></label><input type="date" id="ps-covfrom"></div><div class="fg"><label>Coverage To <span class="req">*</span></label><input type="date" id="ps-covto"></div></div><div class="fg-row"><div class="fg"><label>Next Premium Due Date <span class="req">*</span></label><input type="date" id="ps-renewal"></div><div class="fg"><label>Annual Premium ₹</label><input type="text" id="ps-premium" placeholder="Annual premium"></div></div>`,
+  fd:`<div class="fg-row"><div class="fg"><label>FD Account Number <span class="req">*</span></label><input type="text" id="ps-acc" placeholder="FD account no."></div><div class="fg"><label>Receipt No.</label><input type="text" id="ps-receipt" placeholder="Security deposit receipt no."></div></div><div class="fg-row"><div class="fg"><label>FD Maturity Date <span class="req">*</span></label><input type="date" id="ps-maturity"></div><div class="fg"><label>Interest Rate (% p.a.) <span class="req">*</span></label><input type="text" id="ps-rate" placeholder="e.g. 7.75%"></div></div><div class="fg"><label>Maturity Amount ₹</label><input type="text" id="ps-matamt" placeholder="Expected maturity value"></div>`,
+  bank:`<div class="fg-row"><div class="fg"><label>Account / Loan Number <span class="req">*</span></label><input type="text" id="ps-acc" placeholder="Bank account number"></div><div class="fg"><label>Account Type <span class="req">*</span></label><select id="ps-acctype"><option>Savings Account</option><option>Current Account</option><option>Loan Account</option><option>Credit Card</option></select></div></div><div class="fg-row"><div class="fg"><label>IFSC Code</label><input type="text" id="ps-ifsc" placeholder="Bank IFSC"></div><div class="fg"><label>Net Banking / App Login ID</label><input type="text" id="ps-login" placeholder="Internet banking user ID"></div></div>`,
+  tax:`<div class="fg-row"><div class="fg"><label>ITR Acknowledgment Number <span class="req">*</span></label><input type="text" id="ps-ackno" placeholder="15-digit ITR ack. no."></div><div class="fg"><label>Date of Filing <span class="req">*</span></label><input type="date" id="ps-filed"></div></div><div class="fg-row"><div class="fg"><label>Financial Year <span class="req">*</span></label><select id="ps-fy"><option>FY 2024-25</option><option>FY 2023-24</option><option>FY 2022-23</option></select></div><div class="fg"><label>ITR Form Used</label><select id="ps-form"><option>ITR-1 (Sahaj)</option><option>ITR-2</option><option>ITR-3</option><option>ITR-4</option></select></div></div><div class="fg"><label>Total Income Filed ₹</label><input type="text" id="ps-income" placeholder="Total taxable income"></div>`,
+  egold:`<div class="fg-row"><div class="fg"><label>Order / Transaction Reference <span class="req">*</span></label><input type="text" id="ps-ref" placeholder="Platform transaction ID"></div><div class="fg"><label>Quantity (grams) <span class="req">*</span></label><input type="text" id="ps-qty" placeholder="e.g. 10.000 grams"></div></div><div class="fg-row"><div class="fg"><label>Rate per gram ₹ <span class="req">*</span></label><input type="text" id="ps-rate" placeholder="e.g. ₹ 7,250"></div><div class="fg"><label>Metal Type</label><select id="ps-metal"><option>eGold</option><option>eSilver</option></select></div></div>`,
+  ca_work:`<div class="fg-row"><div class="fg"><label>Filing / Acknowledgment Reference <span class="req">*</span></label><input type="text" id="ps-ref" placeholder="ARN / Ack number / Reference ID"></div><div class="fg"><label>Date of Filing / Completion <span class="req">*</span></label><input type="date" id="ps-date"></div></div><div class="fg"><label>Filing Period / Financial Year</label><input type="text" id="ps-period" placeholder="e.g. Q3 FY 2024-25 / AY 2025-26"></div>`,
+  broking:`<div class="fg-row"><div class="fg"><label>Client ID / Account Number <span class="req">*</span></label><input type="text" id="ps-clientid" placeholder="Broker client ID"></div><div class="fg"><label>Demat Account (DP ID + Client ID)</label><input type="text" id="ps-demat" placeholder="e.g. IN12345600012345"></div></div><div class="fg"><label>Login Credentials Shared?</label><select id="ps-creds"><option>Yes — credentials sent to client</option><option>No — pending</option></select></div>`,
+};
+
+// PS required fields map
+const PS_REQUIRED = {
+  mf_purchase:['ps-folio','ps-units','ps-nav','ps-date'],
+  mf_redemption:['ps-folio','ps-units','ps-nav'],
+  pms:['ps-acc','ps-demat'],
+  aif:['ps-acc'],
+  insurance:['ps-policy','ps-issued','ps-covfrom','ps-covto','ps-renewal'],
+  fd:['ps-acc','ps-maturity','ps-rate'],
+  bank:['ps-acc','ps-acctype'],
+  tax:['ps-ackno','ps-filed','ps-fy'],
+  egold:['ps-ref','ps-qty','ps-rate'],
+  ca_work:['ps-ref','ps-date'],
+  broking:['ps-clientid'],
+};
+
+// ═══════════════ INITIAL TASK DATA ═══════════════
+let nextId = 20;
+let TASKS = [
+  {id:1,title:'GST Return Filing — ABC Enterprises',vertical:'CA Practice',cat:'GST Returns',catId:'gst',nature:'Monthly GSTR-3B',txtype:'CA Work',client:'Ramesh Kumar Sharma',father:'Suresh Kumar',mobile:'9876543210',email:'ramesh@abc.com',assigned:'Neha Joshi',due:'2025-03-10',pri:'High',proof:'Yes — Mandatory',status:'pending',stage:1,created:'Shanil Jain',createdAt:'2025-03-01',s3record:null,proofUploaded:false,s4docUploaded:false,psTemplate:'ca_work'},
+  {id:2,title:'SIP Registration — HDFC Equity Fund',vertical:'Financial Distribution',cat:'Mutual Funds',catId:'mf',nature:'SIP Registration',txtype:'Financial Transaction',client:'Sunita Rao',father:'V K Rao',mobile:'9123456789',email:'sunita@email.com',assigned:'Priya Sharma',due:'2025-03-11',pri:'Normal',proof:'Yes — Mandatory',status:'pending',stage:1,created:'Shanil Jain',createdAt:'2025-03-02',s3record:null,proofUploaded:false,s4docUploaded:false,psTemplate:'mf_purchase'},
+  {id:3,title:'KYC Address Update — Mohan Lal',vertical:'Financial Distribution',cat:'Mutual Funds',catId:'mf',nature:'Address Update',txtype:'Non-Financial',client:'Mohan Lal',father:'Ram Lal',mobile:'9988776655',email:'mohan@email.com',assigned:'Anita Singh',due:'2025-03-12',pri:'Normal',proof:'Yes — Mandatory',status:'pending',stage:1,created:'Arun Jain',createdAt:'2025-03-02',s3record:null,proofUploaded:false,s4docUploaded:false,psTemplate:null},
+  {id:4,title:'Demat Account Opening — Rekha Singh',vertical:'Broking Services',cat:'Demat Account',catId:'demat',nature:'New Demat Account',txtype:'Broking Work',client:'Rekha Singh',father:'B P Singh',mobile:'9001122334',email:'rekha@email.com',assigned:'Vikram Patel',due:'2025-03-15',pri:'Normal',proof:'Yes — Mandatory',status:'pending',stage:1,created:'Shanil Jain',createdAt:'2025-03-03',s3record:null,proofUploaded:false,s4docUploaded:false,psTemplate:'broking'},
+  {id:5,title:'Health Insurance Renewal — Star Health',vertical:'Financial Distribution',cat:'Health Insurance',catId:'health',nature:'Policy Renewal',txtype:'Financial Transaction',client:'Dinesh Kapoor',father:'S K Kapoor',mobile:'9112233445',email:'dinesh@email.com',assigned:'Priya Sharma',due:'2025-03-08',pri:'Urgent',proof:'Yes — Mandatory',status:'pending',stage:1,created:'Shubhani Jain',createdAt:'2025-03-01',s3record:null,proofUploaded:false,s4docUploaded:false,psTemplate:'insurance'},
+  {id:6,title:'ITR Filing — FY 2024-25 (Kavya Menon)',vertical:'CA Practice',cat:'ITR Filing',catId:'itr',nature:'Individual ITR-2',txtype:'CA Work',client:'Kavya Menon',father:'Rajan Menon',mobile:'9443322110',email:'kavya@email.com',assigned:'Neha Joshi',due:'2025-03-20',pri:'High',proof:'Yes — Mandatory',status:'inprogress',stage:2,created:'Shanil Jain',createdAt:'2025-02-28',s3record:null,proofUploaded:false,s4docUploaded:false,psTemplate:'ca_work'},
+  {id:7,title:'Lump Sum MF Purchase — Axis Blue Chip',vertical:'Financial Distribution',cat:'Mutual Funds',catId:'mf',nature:'Lump Sum Purchase',txtype:'Financial Transaction',client:'Pradeep Nair',father:'K V Nair',mobile:'9007788990',email:'pradeep@email.com',assigned:'Priya Sharma',due:'2025-03-09',pri:'High',proof:'Yes — Mandatory',status:'inprogress',stage:2,created:'Shanil Jain',createdAt:'2025-03-01',s3record:null,proofUploaded:false,s4docUploaded:false,psTemplate:'mf_purchase'},
+  {id:8,title:'Capital Gain Report — FY 2024-25',vertical:'Financial Distribution',cat:'Mutual Funds',catId:'mf',nature:'Capital Gain / Tax Report',txtype:'Non-Financial',client:'Geeta Joshi',father:'V Joshi',mobile:'9223344556',email:'geeta@email.com',assigned:'Priya Sharma',due:'2025-03-09',pri:'Urgent',proof:'Yes — Optional',status:'inprogress',stage:2,created:'Arun Jain',createdAt:'2025-03-02',s3record:null,proofUploaded:false,s4docUploaded:false,psTemplate:null},
+  {id:9,title:'POST-SALES: HDFC Life Term Policy — Arvind Mehta',vertical:'Financial Distribution',cat:'Life Insurance',catId:'life',nature:'New Policy Purchase',txtype:'Financial Transaction',client:'Arvind Mehta',father:'S C Mehta',mobile:'9445566778',email:'arvind@email.com',assigned:'Priya Sharma',due:'2025-03-11',pri:'High',proof:'Yes — Mandatory',status:'postsales',stage:4,created:'Shanil Jain',createdAt:'2025-02-26',s3record:{by:'Shanil Jain',at:'2025-03-05 14:30',note:'Payment confirmed. Premium receipt verified.'},proofUploaded:true,s4docUploaded:false,psTemplate:'insurance'},
+  {id:10,title:'POST-SALES: SBI MF Folio Confirmation',vertical:'Financial Distribution',cat:'Mutual Funds',catId:'mf',nature:'Lump Sum Purchase',txtype:'Financial Transaction',client:'Lalita Sharma',father:'R K Sharma',mobile:'9876001122',email:'lalita@email.com',assigned:'Priya Sharma',due:'2025-03-10',pri:'Normal',proof:'Yes — Mandatory',status:'postsales',stage:4,created:'Arun Jain',createdAt:'2025-02-27',s3record:{by:'Arun Jain',at:'2025-03-04 11:00',note:'Transaction confirmed. Amount debited from client account.'},proofUploaded:true,s4docUploaded:false,psTemplate:'mf_purchase'},
+  {id:11,title:'POST-SALES: AIF Investment — Anand Rathi',vertical:'Financial Distribution',cat:'AIF',catId:'aif',nature:'New Investment',txtype:'Financial Transaction',client:'Nirmal Shah',father:'D Shah',mobile:'9334455667',email:'nirmal@email.com',assigned:'Rahul Gupta',due:'2025-03-14',pri:'Urgent',proof:'Yes — Mandatory',status:'postsales',stage:4,created:'Shanil Jain',createdAt:'2025-02-25',s3record:{by:'Shanil Jain',at:'2025-03-06 09:15',note:'Investment amount transferred. Confirmation awaited from fund.'},proofUploaded:true,s4docUploaded:false,psTemplate:'aif'},
+  {id:12,title:'GST Annual Return — XYZ Ltd',vertical:'CA Practice',cat:'GST Returns',catId:'gst',nature:'Annual GSTR-9',txtype:'CA Work',client:'XYZ Limited',father:'—',mobile:'9556677889',email:'xyz@co.in',assigned:'Mukesh Agrawal',due:'2025-02-28',pri:'High',proof:'Yes — Mandatory',status:'done',stage:5,created:'Shanil Jain',createdAt:'2025-02-10',s3record:{by:'Shanil Jain',at:'2025-02-26 16:00',note:'Return verified and filed successfully.'},proofUploaded:true,s4docUploaded:true,psTemplate:'ca_work'},
+  {id:13,title:'Bank Detail Update — Axis Bank',vertical:'Financial Distribution',cat:'Mutual Funds',catId:'mf',nature:'Bank Detail Update',txtype:'Non-Financial',client:'Suresh Patil',father:'K Patil',mobile:'9001002003',email:'suresh@email.com',assigned:'Anita Singh',due:'2025-02-25',pri:'Normal',proof:'Yes — Mandatory',status:'done',stage:5,created:'Shubhani Jain',createdAt:'2025-02-18',s3record:{by:'Shubhani Jain',at:'2025-02-24 10:45',note:'Bank detail update confirmed on CAMS portal.'},proofUploaded:true,s4docUploaded:false,psTemplate:null},
+];
+
+// ═══════════════ USERS DATA ═══════════════
+let USERS = [
+  {name:'Priya Sharma',email:'priya@slt.in',mobile:'9876543201',role:'Back Office Operator',vertical:'All Verticals',active:8,done:43,eff:87,av:'PS',col:'linear-gradient(135deg,#b45309,#f59e0b)',roleClass:'r-bo'},
+  {name:'Rahul Gupta',email:'rahul@slt.in',mobile:'9876543202',role:'Operations Manager',vertical:'All Verticals',active:5,done:31,eff:92,av:'RG',col:'linear-gradient(135deg,#065f46,#10b981)',roleClass:'r-mgr'},
+  {name:'Anita Singh',email:'anita@slt.in',mobile:'9876543203',role:'KYC Executive',vertical:'Financial Distribution',active:6,done:28,eff:90,av:'AS',col:'linear-gradient(135deg,#6b21a8,#a855f7)',roleClass:'r-kyc'},
+  {name:'Vikram Patel',email:'vikram@slt.in',mobile:'9876543204',role:'Relationship Manager',vertical:'Financial Distribution',active:4,done:19,eff:78,av:'VP',col:'linear-gradient(135deg,#c2410c,#f97316)',roleClass:'r-rm'},
+  {name:'Neha Joshi',email:'neha@slt.in',mobile:'9876543205',role:'CA Specialist',vertical:'CA Practice',active:3,done:22,eff:95,av:'NJ',col:'linear-gradient(135deg,#1d4ed8,#6366f1)',roleClass:'r-ca'},
+  {name:'Mukesh Agrawal',email:'mukesh@slt.in',mobile:'9876543206',role:'CA Specialist',vertical:'CA Practice',active:7,done:38,eff:88,av:'MA',col:'linear-gradient(135deg,#0f172a,#334155)',roleClass:'r-ca'},
+];
+
+// ═══════════════ STATE ═══════════════
+let curPanel='';
+let curDetailId=null;
+let sendbackTaskId=null;
+let cStep=1,selVert='',selCat='',selCatId='',selNature='',selNatureCode='',selTxcat='';
+let subtaskCount=0;
+let misBc=[];
+let misCtx={vert:'',cat:'',catId:'',tx:''};
+let currentUser={name:'Admin',role:'admin'};
+
+// ═══════════════ COMPUTED ═══════════════
+function getByStatus(s){ return TASKS.filter(t=>t.status===s); }
+function getCounts(){
+  return {
+    pending:getByStatus('pending').length,
+    inprogress:getByStatus('inprogress').length,
+    postsales:getByStatus('postsales').length,
+    done:getByStatus('done').length,
+  };
+}
+
+// ═══════════════ UI REFRESH ═══════════════
+function refreshCounts(){
+  const c=getCounts();
+  // BUG #5 FIX: always sync both dashboard cards AND sidebar badges from same source
+  ['pending','inprogress','postsales','done'].forEach(s=>{
+    const el=document.getElementById('cnt-'+s);
+    const badge=document.getElementById('badge-'+s);
+    if(el) el.textContent=c[s];
+    if(badge) badge.textContent=c[s];
+  });
+  // vertical counts
+  document.getElementById('vc-ca').textContent=TASKS.filter(t=>t.vertical==='CA Practice'&&t.status!=='done').length;
+  document.getElementById('vc-dist').textContent=TASKS.filter(t=>t.vertical==='Financial Distribution'&&t.status!=='done').length;
+  document.getElementById('vc-broke').textContent=TASKS.filter(t=>t.vertical==='Broking Services'&&t.status!=='done').length;
+  // snapshots - BUG #8 FIX: use consistent data
+  const today=new Date().toISOString().split('T')[0];
+  const createdToday=TASKS.filter(t=>t.createdAt&&t.createdAt.slice(0,10)===today).length;
+  document.getElementById('snap-created').textContent=createdToday;
+  document.getElementById('snap-done').textContent=getByStatus('done').length;
+  const overdue=TASKS.filter(t=>t.status!=='done'&&t.due&&t.due<today).length;
+  document.getElementById('snap-overdue').textContent=overdue;
+  // re-render panel if open
+  if(curPanel) renderPanel(curPanel);
+  // re-render detail if open
+  if(curDetailId!==null && document.getElementById('detailOverlay').classList.contains('active')){
+    const t=TASKS.find(x=>x.id===curDetailId);
+    if(t) renderDetail(t);
+  }
+  // BUG #4 FIX: also refresh MIS if on that page
+  if(document.getElementById('page-mis').classList.contains('active')){
+    misDraw();
+  }
+}
+
+// ═══════════════ LOGIN / LOGOUT ═══════════════
+async function doLogin(){
+  const u=document.getElementById('loginUser').value.trim();
+  const r=document.getElementById('loginRole').value;
+  if(!u){
+    document.getElementById('loginUser').classList.add('field-err');
+    showToast('⚠️ Please enter a username','error');
+    return;
+  }
+  document.getElementById('loginUser').classList.remove('field-err');
+
+  // Call real login API
+  const data = await apiCall('POST', '/login', { username: u });
+
+  if(!data.success){
+    showToast('❌ ' + data.error, 'error');
+    return;
+  }
+
+  // Store token for all future API calls
+  authToken = data.token;
+
+  const roleMap={
+    'Admin / Partner':          {av:'AP', col:'linear-gradient(135deg,#b45309,#f59e0b)'},
+    'Operations Manager':       {av:'OM', col:'linear-gradient(135deg,#065f46,#10b981)'},
+    'Relationship Manager':     {av:'RM', col:'linear-gradient(135deg,#6b21a8,#a855f7)'},
+    'Back Office Operator':     {av:'BO', col:'linear-gradient(135deg,#1e40af,#3b82f6)'},
+    'KYC Executive':            {av:'KE', col:'linear-gradient(135deg,#c2410c,#f97316)'},
+    'CA / Tax Specialist':      {av:'CA', col:'linear-gradient(135deg,#0f172a,#334155)'},
+  };
+  const rd = roleMap[data.user.role] || roleMap['Back Office Operator'];
+
+  document.getElementById('sbAv').textContent = rd.av;
+  document.getElementById('sbAv').style.background = rd.col;
+  document.getElementById('sbName').textContent = data.user.fullName;
+  document.getElementById('sbRole').textContent = data.user.role;
+
+  currentUser = { name: data.user.fullName, role: data.user.role, id: data.user.id };
+
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('appShell').style.display='block';
+
+  // Load real data from backend
+  await loadDashboard();
+}
+
+// ═══════════════ LOAD REAL DATA FROM API ═══════════════
+
+async function loadDashboard(){
+  // Load summary counts
+  const summary = await apiCall('GET', '/dashboard/summary');
+  if(summary.success){
+    document.getElementById('cnt-pending').textContent    = summary.counts.pending;
+    document.getElementById('cnt-inprogress').textContent = summary.counts.inprogress;
+    document.getElementById('cnt-postsales').textContent  = summary.counts.postsales;
+    document.getElementById('cnt-done').textContent       = summary.counts.done;
+    document.getElementById('badge-pending').textContent    = summary.counts.pending;
+    document.getElementById('badge-inprogress').textContent = summary.counts.inprogress;
+    document.getElementById('badge-postsales').textContent  = summary.counts.postsales;
+    document.getElementById('snap-created').textContent   = summary.snapshot.createdToday;
+    document.getElementById('snap-done').textContent      = summary.snapshot.completedToday;
+    document.getElementById('snap-overdue').textContent   = summary.snapshot.overdue;
+    document.getElementById('snap-renewals').textContent  = summary.snapshot.renewalsDue30d ?? 0;
+  }
+
+  // Load vertical counts
+  const verts = await apiCall('GET', '/dashboard/verticals');
+  if(verts.success){
+    verts.verticals.forEach(v => {
+      const el = document.getElementById('vc-' + v.code);
+      if(el) el.textContent = v.active_count;
+    });
+  }
+
+  // BUG #4 FIX: Load ALL tasks from all statuses into TASKS array
+  // This ensures MIS and status panels always show fresh data from DB
+  const allStatuses = ['pending','inprogress','postsales','done'];
+  const allTasksLoaded = await Promise.all(allStatuses.map(s => loadTasksByStatus(s)));
+  TASKS = allTasksLoaded.flat();
+
+  // Load staff for assign dropdown
+  await loadStaff();
+}
+
+async function loadStaff(){
+  const data = await apiCall('GET', '/staff');
+  if(data.success){
+    USERS = data.staff.map(u => ({
+      name: u.full_name,
+      role: u.role,
+      active: u.tasks_active || 0,
+      done: u.tasks_completed || 0,
+      eff: u.efficiency_pct || 0,
+      av: u.full_name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+      col: 'linear-gradient(135deg,#1e40af,#3b82f6)',
+      roleClass: 'r-bo'
+    }));
+    refreshAssignDropdown();
+    renderUsersGrid();
+  }
+}
+
+async function loadTasksByStatus(status){
+  const data = await apiCall('GET', '/dashboard/tasks/' + status);
+  if(!data.success){ showToast('⚠️ Could not load tasks', 'error'); return []; }
+  // Map API response to match frontend task object shape
+  return data.tasks.map(t => ({
+    id:         t.id,
+    title:      t.title,
+    status:     t.status,
+    stage:      t.stage,
+    pri:        t.priority,
+    tx_type:    t.tx_type,  // keep snake_case for compat
+    txtype:     t.tx_type,
+    due:        t.due_date ? t.due_date.slice(0,10) : '',
+    client:     t.client_name,
+    mobile:     t.client_mobile,
+    assigned:   t.assigned_to_name,
+    created:    t.created_by_name,
+    vertical:   t.vertical_name,
+    cat:        t.category_name,
+    catId:      t.category_code,
+    nature:     t.nature_name,
+    proof:      t.proof_required,
+    proofUploaded:  t.proof_uploaded,
+    s4docUploaded:  t.s4_doc_uploaded,
+    psTemplate: t.ps_template,
+    s3record:   t.s3_confirmed_at ? {
+      by:   t.s3_confirmed_by_name,
+      at:   t.s3_confirmed_at,
+      note: t.s3_note
+    } : null
+  }));
+}
+
+function doLogout(){
+  document.getElementById('appShell').style.display='none';
+  document.getElementById('loginPage').style.display='flex';
+  // FIX: clear login form on logout
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginRole').value='admin';
+  document.getElementById('loginUser').classList.remove('field-err');
+  curPanel='';curDetailId=null;
+}
+
+// ═══════════════ PAGE NAV ═══════════════
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+  const titles={dashboard:'Dashboard',mis:'MIS Reports',users:'User Management'};
+  const subs={dashboard:'Welcome back — unified task overview across all verticals',mis:'Drill down by vertical, product and transaction type',users:'Manage team members, roles and vertical access'};
+  document.getElementById('tbTitle').textContent=titles[id]||id;
+  document.getElementById('tbSub').textContent=subs[id]||'';
+}
+function goMIS(vertId){
+  showPage('mis', document.getElementById('nav-mis'));
+  setTimeout(()=>misSelectVert(vertId),50);
+}
+function filterStatus(type){
+  showPage('dashboard',document.getElementById('nav-dashboard'));
+  setTimeout(()=>togglePanel(type,null),80);
+}
+
+// ═══════════════ STATUS PANEL ═══════════════
+async function togglePanel(type,card){
+  const panel=document.getElementById('taskPanel');
+  if(curPanel===type && panel.classList.contains('active')){closePanel();return;}
+  curPanel=type;
+  document.querySelectorAll('.sc').forEach(c=>c.classList.remove('active'));
+  if(card) card.classList.add('active');
+  else{
+    const map={pending:'.s-pend',inprogress:'.s-prog',postsales:'.s-post',done:'.s-done'};
+    const el=document.querySelector(map[type]);
+    if(el) el.classList.add('active');
+  }
+
+  // Show loading state
+  const labels={pending:'⏳ Pending Tasks',inprogress:'⚡ In-Progress Tasks',postsales:'🔁 Post-Sales Follow-Up Tasks',done:'✅ Completed Tasks'};
+  document.getElementById('panelTitle').textContent = labels[type]||type;
+  document.getElementById('panelList').innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;font-size:13px;">⏳ Loading tasks...</div>';
+  panel.classList.add('active');
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+
+  // Load from API
+  const tasks = await loadTasksByStatus(type);
+
+  // Store in TASKS for detail modal access
+  TASKS = TASKS.filter(t => t.status !== type);
+  TASKS.push(...tasks);
+
+  renderPanel(type);
+}
+
+function closePanel(){
+  document.getElementById('taskPanel').classList.remove('active');
+  document.querySelectorAll('.sc').forEach(c=>c.classList.remove('active'));
+  curPanel='';
+}
+
+function renderPanel(type){
+  const tasks = TASKS.filter(t => t.status === type);
+  const bmap = {pending:'bdg-pend',inprogress:'bdg-prog',postsales:'bdg-post',done:'bdg-done'};
+  if(tasks.length === 0){
+    document.getElementById('panelList').innerHTML =
+      '<div style="padding:20px;text-align:center;color:#94a3b8;font-size:13px;">No tasks found in this status.</div>';
+    return;
+  }
+  const rows = tasks.map(t => `
+    <div class="tt-row" onclick="openDetail(${t.id})">
+      <div class="tt-task">${t.title}</div>
+      <div class="tt-client">${t.client||'—'}<br><span style="font-size:10px;color:#94a3b8">${t.mobile||''}</span></div>
+      <div style="font-size:11px;color:#64748b">${t.assigned||'—'}</div>
+      <div style="font-size:11px;color:#64748b">${t.due||'—'}</div>
+      <div><span class="bdg ${bmap[t.status]||'bdg-pend'}">${statusLabel(t.status)}</span></div>
+      <div class="tt-link">View →</div>
+    </div>`).join('');
+  document.getElementById('panelList').innerHTML = `
+    <div class="tt-wrap" style="border-radius:0;border:none;box-shadow:none;">
+      <div class="tt-head"><div>Task</div><div>Client</div><div>Assigned To</div><div>Due Date</div><div>Status</div><div>Action</div></div>
+      <div>${rows}</div>
+    </div>`;
+}
+
+// FIX: All levels replace content. Breadcrumb nodes all navigate back correctly.
+function misDraw(){
+  const cont=document.getElementById('misContent');
+  // Always start fresh
+  cont.innerHTML='';
+
+  if(!misCtx.vert){
+    // Level 0: vertical cards
+    cont.innerHTML=`<div class="vert-grid">
+      <div class="vert-card v-ca" onclick="misSelectVert('ca')"><div class="vc-icon">🏛️</div><div class="vc-name">CA Practice</div><div class="vc-cnt" style="color:var(--ca)">${TASKS.filter(t=>t.vertical==='CA Practice'&&t.status!=='done').length}</div><div class="vc-sub">GST · ITR · Audit · Compliance</div></div>
+      <div class="vert-card v-dist" onclick="misSelectVert('dist')"><div class="vc-icon">💹</div><div class="vc-name">Financial Distribution</div><div class="vc-cnt" style="color:var(--dist)">${TASKS.filter(t=>t.vertical==='Financial Distribution'&&t.status!=='done').length}</div><div class="vc-sub">MF · Insurance · PMS · AIF · FD · Banking · eGold</div></div>
+      <div class="vert-card v-broke" onclick="misSelectVert('broke')"><div class="vc-icon">📈</div><div class="vc-name">Broking Services</div><div class="vc-cnt" style="color:var(--broke)">${TASKS.filter(t=>t.vertical==='Broking Services'&&t.status!=='done').length}</div><div class="vc-sub">Demat · Trade Support · KYC</div></div>
+    </div>`;
+    return;
+  }
+
+  const cats=CATEGORIES[misCtx.vert]||[];
+  const vertName={ca:'CA Practice',dist:'Financial Distribution',broke:'Broking Services'}[misCtx.vert];
+
+  if(!misCtx.catId){
+    // Level 1: product bubbles
+    cont.innerHTML=`<div class="bubbles-wrap">${cats.map(c=>{
+      const cnt=TASKS.filter(t=>t.catId===c.id).length;
+      return `<div class="bubble ${c.cls}${misCtx.catId===c.id?' active':''}" onclick="misSelectCat('${c.id}','${c.name}')">
+        <div class="bubble-cnt">${cnt}</div>
+        <div class="bubble-icon">${c.icon}</div>
+        <div class="bubble-name">${c.name}</div>
+      </div>`;
+    }).join('')}</div>`;
+    return;
+  }
+
+  const catName=(cats.find(c=>c.id===misCtx.catId)||{}).name||'';
+
+  if(!misCtx.tx && misCtx.vert==='dist'){
+    // Level 2 for dist: FT / NFT
+    const nats=NATURES[misCtx.catId]||[];
+    cont.innerHTML=`<div class="tx-grid">
+      <div class="tx-card" onclick="misSelectTx('ft')"><div class="tx-icon">💰</div><div class="tx-name">Financial Transactions</div><div class="tx-desc">Purchase, Redemption, Renewals</div><div class="tx-cnt">${nats.length} types</div></div>
+      <div class="tx-card" onclick="misSelectTx('nft')"><div class="tx-icon">📁</div><div class="tx-name">Non-Financial Transactions</div><div class="tx-desc">KYC, Reports, Back Office, Renewals</div><div class="tx-cnt">8 types</div></div>
+    </div>`;
+    return;
+  }
+
+  // Level 3: nature cards + task table
+  // BUG #6 FIX: filter by both catId AND tx type if selected
+  const nats=NATURES[misCtx.catId]||[];
+  let filteredTasks=TASKS.filter(t=>t.catId===misCtx.catId);
+  if(misCtx.tx==='ft'){
+    filteredTasks=filteredTasks.filter(t=>t.txtype==='Financial Transaction'||t.tx_type==='Financial Transaction');
+  } else if(misCtx.tx==='nft'){
+    filteredTasks=filteredTasks.filter(t=>t.txtype!=='Financial Transaction'&&t.tx_type!=='Financial Transaction');
+  }
+  const bmap={pending:'bdg-pend',inprogress:'bdg-prog',postsales:'bdg-post',done:'bdg-done'};
+  const rows=filteredTasks.length>0?filteredTasks.map(t=>`
+    <div class="tt-row" onclick="openDetail(${t.id})">
+      <div class="tt-task">${t.title}</div>
+      <div class="tt-client">${t.client||t.client_name}<br><span style="font-size:10px;color:#94a3b8">${t.mobile||t.client_mobile}</span></div>
+      <div style="font-size:11px;color:#64748b">${t.assigned||t.assigned_to_name}</div>
+      <div style="font-size:11px;color:#64748b">${t.due||t.due_date}</div>
+      <div><span class="bdg ${bmap[t.status]||'bdg-pend'}">${statusLabel(t.status)}</span></div>
+      <div class="tt-link">View →</div>
+    </div>`).join('')
+    :`<div style="padding:18px 20px;font-size:13px;color:#94a3b8">No tasks yet for this category. <span class="tt-link" onclick="openCreateWithCtx('${misCtx.vert}','${misCtx.catId}')">+ Create one</span></div>`;
+
+  cont.innerHTML=`
+    <div class="nat-grid">${nats.map(n=>`
+      <div class="nat-card"><div class="nat-icon">${n.i}</div><div class="nat-name">${n.n}</div><div class="nat-desc">${n.d}</div></div>`).join('')}
+    </div>
+    <div class="tt-wrap">
+      <div class="tt-head"><div>Task</div><div>Client</div><div>Assigned To</div><div>Due Date</div><div>Status</div><div>Action</div></div>
+      <div>${rows}</div>
+    </div>`;
+}
+
+function misSelectVert(id){
+  misCtx={vert:id,catId:'',tx:''};
+  const names={ca:'CA Practice',dist:'Financial Distribution',broke:'Broking Services'};
+  const icons={ca:'🏛️',dist:'💹',broke:'📈'};
+  misBc=[{label:'All Verticals',fn:'misReset()'},{label:`${icons[id]} ${names[id]}`,fn:'misBackToVert()'}];
+  updateBC();misDraw();
+}
+function misSelectCat(id,name){
+  misCtx.catId=id;misCtx.tx='';
+  misBc=misBc.slice(0,2);
+  misBc.push({label:name,fn:'misBackToCat()'});
+  updateBC();misDraw();
+}
+function misSelectTx(tx){
+  misCtx.tx=tx;
+  const lbl=tx==='ft'?'💰 Financial Transactions':'📁 Non-Financial';
+  misBc=misBc.slice(0,3);
+  misBc.push({label:lbl,fn:''});
+  updateBC();misDraw();
+}
+function misReset(){misCtx={vert:'',catId:'',tx:''};misBc=[];updateBC();misDraw();}
+function misBackToVert(){misCtx.catId='';misCtx.tx='';misBc=misBc.slice(0,2);updateBC();misDraw();}
+function misBackToCat(){misCtx.tx='';misBc=misBc.slice(0,3);updateBC();misDraw();}
+
+function updateBC(){
+  const base=[{label:'All Verticals',fn:'misReset()'}];
+  const items=misBc.length>0?misBc:base;
+  document.getElementById('bcRow').innerHTML=items.map((b,i)=>`
+    ${i>0?'<span class="bc-sep">›</span>':''}
+    <span class="bc ${i===items.length-1&&!b.fn?'cur':''}" onclick="${b.fn||''}" style="${b.fn?'':'cursor:default'}">${b.label}</span>`).join('');
+}
+
+// FIX: +Create from MIS carries context
+function openCreateWithCtx(vertId,catId){
+  openCreate();
+  setTimeout(()=>{
+    selVert=vertId;
+    const opt=document.getElementById('o-'+vertId);
+    if(opt){document.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));opt.classList.add('sel');}
+    nextStep(); // go to step 2
+    setTimeout(()=>{
+      const catEl=document.getElementById('cat-'+catId);
+      if(catEl){selCatId=catId;selCat=catId;catEl.classList.add('sel');}
+    },100);
+  },100);
+}
+
+// ═══════════════ TASK DETAIL MODAL ═══════════════
+function openDetail(id){
+  const t=TASKS.find(x=>x.id===id);
+  if(!t){showToast('⚠️ Task not found','error');return;}
+  curDetailId=id;
+  renderDetail(t);
+  document.getElementById('detailOverlay').classList.add('active');
+}
+
+function renderDetail(t){
+  document.getElementById('dTitle').textContent=t.title;
+  document.getElementById('dSub').textContent=`${t.vertical} · ${t.cat} · ${t.nature}`;
+  document.getElementById('d-vert').textContent=t.vertical;
+  document.getElementById('d-cat').textContent=t.cat;
+  document.getElementById('d-nat').textContent=t.nature;
+  document.getElementById('d-txtype').textContent=t.txtype;
+  document.getElementById('d-status').innerHTML=`<span class="bdg bdg-${t.status==='pending'?'pend':t.status==='inprogress'?'prog':t.status==='postsales'?'post':'done'}">${statusLabel(t.status)}</span>`;
+  document.getElementById('d-pri').innerHTML=`<span class="bdg ${t.pri==='Urgent'?'bdg-urg':t.pri==='High'?'bdg-high':'bdg-norm'}">${t.pri}</span>`;
+  document.getElementById('d-cname').textContent=t.client;
+  document.getElementById('d-cfather').textContent=t.father||'—';
+  document.getElementById('d-cmobile').textContent=t.mobile;
+  document.getElementById('d-cemail').textContent=t.email||'—';
+  document.getElementById('d-assigned').textContent=t.assigned;
+  document.getElementById('d-due').textContent=t.due;
+  document.getElementById('d-proof').textContent=t.proof||t.proof_required||'Yes — Mandatory';
+  document.getElementById('d-created').textContent=t.created;
+
+  // Stages bar
+  const snames=['Initiated','In Progress','Confirmed','Post-Sales F/U','Complete'];
+  const cur=t.stage;
+  document.getElementById('stagesBar').innerHTML=snames.map((s,i)=>`
+    <div class="stg ${i+1<cur?'done':i+1===cur?'cur':''}">
+      <div class="stg-n">${i+1<cur?'✓':'S'+(i+1)}</div>
+      <div class="stg-label">${s}</div>
+    </div>`).join('');
+
+  // FIX: Stage 3 confirmation record
+  const s3sec=document.getElementById('s3RecordSection');
+  if(t.s3record && t.stage>=4){
+    s3sec.style.display='block';
+    document.getElementById('s3RecordBody').innerHTML=`Confirmed by <strong>${t.s3record.by}</strong> on ${t.s3record.at}<br>${t.s3record.note?`<em>"${t.s3record.note}"</em>`:''}`;
+  } else { s3sec.style.display='none'; }
+
+  // Proof section
+  const proofSec=document.getElementById('proofContent');
+  if(t.proofUploaded){
+    proofSec.innerHTML=`<div class="proof-uploaded">✅ Proof uploaded — Stage 2 evidence on file</div>`;
+  } else {
+    proofSec.innerHTML=`<div class="proof-box">📎 Upload proof — payment screenshot, submission confirmation, reference number<input type="file" onchange="handleProofUpload(this,'stage2proof')"></div>`;
+  }
+
+  // Post-sales section
+  const psSec=document.getElementById('psSection');
+  if((t.status==='postsales'||t.stage===4) && t.psTemplate){
+    psSec.style.display='block';
+    const tmpl=PS_TEMPLATES[t.psTemplate]||'';
+    const ptitles={mf_purchase:'Mutual Fund Purchase — Fulfillment',mf_redemption:'Mutual Fund Redemption — Fulfillment',pms:'PMS — Account Details',aif:'AIF — Account Setup',insurance:'Insurance — Policy Details',fd:'Fixed Deposit — Confirmation',bank:'Banking — Account Details',tax:'Tax Filing — Acknowledgment',egold:'eGold/eSilver — Order Details',ca_work:'CA Work — Filing Confirmation',broking:'Broking — Account Details'};
+    document.getElementById('psTitle').textContent=ptitles[t.psTemplate]||'Fulfillment Details';
+    document.getElementById('psFields').innerHTML=tmpl||'<p style="font-size:12px;color:#64748b">No specific template.</p>';
+    if(t.s4docUploaded){
+      psSec.querySelector('.proof-box').outerHTML='<div class="proof-uploaded">✅ Fulfillment document uploaded</div>';
+    }
+  } else { psSec.style.display='none'; }
+
+  // FIX: Role-based action buttons
+  // Managers/Admins see confirm/verify buttons
+  // Staff see only their own task actions (mark done, upload proof)
+  const actRow=document.getElementById('actRow');
+  const isManager = ['Admin / Partner','Operations Manager','Relationship Manager'].includes(currentUser.role);
+  const isAssignee = t.assigned === currentUser.name;
+
+  if(t.status==='pending'){
+    if(isManager){
+      actRow.innerHTML=`
+        <button class="btn btn-navy" onclick="actionConfirmStage2(${t.id})">✅ Mark as In Progress</button>
+        <button class="btn btn-ghost" onclick="showToast('🔔 Reminder sent to ${t.assigned}!')">🔔 Send Reminder</button>`;
+    } else {
+      actRow.innerHTML=`<p style="font-size:13px;color:#64748b">Awaiting manager to start this task.</p>`;
+    }
+  } else if(t.status==='inprogress'){
+    if(isManager){
+      actRow.innerHTML=`
+        <button class="btn btn-teal" onclick="actionConfirmStage3(${t.id})">✅ Confirm & ${t.txtype==='Financial Transaction'?'Create Post-Sales Task':'Mark Complete'}</button>
+        <button class="btn btn-red" onclick="openSendback(${t.id})">↩ Send Back</button>
+        <button class="btn btn-ghost" onclick="showToast('🔔 Nudge sent to ${t.assigned}!')">🔔 Nudge</button>`;
+    } else if(isAssignee){
+      actRow.innerHTML=`
+        <button class="btn btn-navy" onclick="showToast('📎 Upload your proof above, then notify your manager.')">📤 Submit for Review</button>`;
+    } else {
+      actRow.innerHTML=`<p style="font-size:13px;color:#64748b">Task is being worked on by ${t.assigned}.</p>`;
+    }
+  } else if(t.status==='postsales'){
+    if(isManager){
+      actRow.innerHTML=`
+        <button class="btn btn-teal" onclick="actionVerifyFulfillment(${t.id})">🏁 Verify Fulfillment & Close Task</button>
+        <button class="btn btn-red" onclick="openSendback(${t.id})">↩ Send Back</button>
+        <button class="btn btn-ghost" onclick="showToast('🔔 Nudge sent to ${t.assigned}!')">🔔 Nudge</button>`;
+    } else if(isAssignee){
+      actRow.innerHTML=`
+        <button class="btn btn-navy" onclick="showToast('📎 Fill the fulfillment details above and upload the document.')">📤 Submit Fulfillment</button>`;
+    } else {
+      actRow.innerHTML=`<p style="font-size:13px;color:#64748b">Awaiting fulfillment from ${t.assigned}.</p>`;
+    }
+  } else {
+    if(isManager){
+      actRow.innerHTML=`
+        <button class="btn btn-ghost" onclick="actionReopen(${t.id})">📋 Re-open Task</button>`;
+    } else {
+      actRow.innerHTML=`<p style="font-size:13px;color:#64748b;font-weight:600;">✅ This task is fully completed.</p>`;
+    }
+  }
+}
+
+function closeDetail(){document.getElementById('detailOverlay').classList.remove('active');curDetailId=null;}
+
+// ═══════════════ STATEFUL ACTIONS ═══════════════
+// FIX: All actions now mutate task state and refresh UI
+
+async function actionConfirmStage2(id){
+  const data = await apiCall('PUT', '/tasks/'+id+'/stage', { action:'start' });
+  if(!data.success){ showToast('❌ '+data.error,'error'); return; }
+  const t=TASKS.find(x=>x.id===id);
+  if(t){ t.status='inprogress'; t.stage=2; }
+  showToast('⚡ Task moved to In Progress','success');
+  await loadDashboard();
+  refreshCounts();
+}
+
+async function actionConfirmStage3(id){
+  const t=TASKS.find(x=>x.id===id);
+  const note = t ? `Confirmed by ${currentUser.name}` : '';
+  const data = await apiCall('PUT', '/tasks/'+id+'/stage', { action:'confirm', note });
+  if(!data.success){ showToast('❌ '+data.error,'error'); return; }
+  if(t){
+    const now = new Date().toISOString().slice(0,16).replace('T',' ');
+    t.s3record = { by: currentUser.name, at: now, note };
+    // BUG #3 FIX: check both txtype and tx_type (API returns tx_type)
+    const isFinancial = t.txtype==='Financial Transaction' || t.tx_type==='Financial Transaction';
+    if(isFinancial && t.psTemplate && t.psTemplate !== 'none'){
+      t.status='postsales'; t.stage=4;
+      showToast('🔁 Confirmed! Post-Sales Follow-Up task created.','success');
+    } else {
+      t.status='done'; t.stage=5;
+      showToast('✅ Task fully completed!','success');
+    }
+  }
+  await loadDashboard();
+  refreshCounts();
+}
+
+async function actionVerifyFulfillment(id){
+  const t=TASKS.find(x=>x.id===id);
+  const reqFields = PS_REQUIRED[t ? t.psTemplate : ''] || [];
+  const missing = reqFields.filter(fId=>{ const el=document.getElementById(fId); return el && !el.value.trim(); });
+  if(missing.length>0){
+    missing.forEach(fId=>{ const el=document.getElementById(fId); if(el) el.classList.add('err'); });
+    showToast(`⚠️ Please fill ${missing.length} required field(s)`,'error');
+    return;
+  }
+  const data = await apiCall('PUT', '/tasks/'+id+'/stage', { action:'verify' });
+  if(!data.success){ showToast('❌ '+data.error,'error'); return; }
+  if(t){ t.status='done'; t.stage=5; t.s4docUploaded=true; }
+  showToast('🏁 Fulfillment verified. Task fully completed!','success');
+  await loadDashboard();
+  refreshCounts();
+}
+
+async function actionReopen(id){
+  const data = await apiCall('PUT', '/tasks/'+id+'/stage', { action:'reopen' });
+  if(!data.success){ showToast('❌ '+data.error,'error'); return; }
+  const t=TASKS.find(x=>x.id===id);
+  if(t){ t.status='inprogress'; t.stage=2; t.s3record=null; }
+  showToast('📋 Task re-opened','success');
+  await loadDashboard();
+  refreshCounts();
+}
+
+function handleProofUpload(input,type){
+  if(!input.files||!input.files[0]) return;
+  const fname=input.files[0].name;
+  if(type==='stage2proof' && curDetailId!==null){
+    const t=TASKS.find(x=>x.id===curDetailId);
+    if(t){ t.proofUploaded=true; showToast(`📎 Proof uploaded: ${fname}`,'success'); renderDetail(t); }
+  } else if(type==='stage4doc' && curDetailId!==null){
+    const t=TASKS.find(x=>x.id===curDetailId);
+    if(t){ t.s4docUploaded=true; showToast(`📎 Fulfillment doc uploaded: ${fname}`,'success'); renderDetail(t); }
+  }
+}
+
+// ═══════════════ SEND BACK MODAL ═══════════════
+function openSendback(id){
+  sendbackTaskId=id;
+  document.getElementById('sendbackReason').value='';
+  document.getElementById('sendbackOverlay').classList.add('active');
+}
+function closeSendback(){document.getElementById('sendbackOverlay').classList.remove('active');sendbackTaskId=null;}
+async function confirmSendback(){
+  const reason=document.getElementById('sendbackReason').value.trim();
+  if(!reason){
+    document.getElementById('sendbackReason').classList.add('err');
+    showToast('⚠️ Please enter a reason','error');
+    return;
+  }
+  document.getElementById('sendbackReason').classList.remove('err');
+
+  const data = await apiCall('PUT', '/tasks/'+sendbackTaskId+'/stage', {
+    action: 'send_back',
+    note: reason
+  });
+
+  if(!data.success){ showToast('❌ '+data.error,'error'); return; }
+
+  const t=TASKS.find(x=>x.id===sendbackTaskId);
+  if(t){ t.status='inprogress'; t.stage=2; t.s3record=null; }
+
+  showToast('↩ Task sent back with reason recorded','success');
+  await loadDashboard();
+  refreshCounts();
+  closeSendback();
+}
+
+// ═══════════════ CREATE TASK MODAL ═══════════════
+function refreshAssignDropdown(){
+  const sel=document.getElementById('tAssign');
+  if(!sel) return;
+  sel.innerHTML='<option value="">— Select team member —</option>'+USERS.map(u=>`<option>${u.name} (${u.role})</option>`).join('');
+}
+
+function openCreate(){
+  cStep=1;selVert='';selCat='';selCatId='';selNature='';selTxcat='';subtaskCount=0;
+  document.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+  document.querySelectorAll('.sub-opt').forEach(o=>o.classList.remove('sel'));
+  ['cName','cFather','cMobile','cEmail','tTitle','tDesc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('subtasksList').innerHTML='';
+  document.getElementById('sipDateWrap').style.display='none';
+  refreshAssignDropdown();
+  updateStepper();showFStep(1);
+  document.getElementById('createOverlay').classList.add('active');
+}
+function closeCreate(){document.getElementById('createOverlay').classList.remove('active');}
+
+function selOpt(type,val,el){
+  if(type==='vert'){
+    selVert=val;
+    document.querySelectorAll('[id^="o-ca"],[id^="o-dist"],[id^="o-broke"]').forEach(o=>o.classList.remove('sel'));
+    el.classList.add('sel');
+  } else if(type==='txcat'){
+    selTxcat=val;
+    document.querySelectorAll('[id^="o-ft"],[id^="o-nft"]').forEach(o=>o.classList.remove('sel'));
+    el.classList.add('sel');
+  }
+}
+function selCatOpt(val,id,el){selCat=val;selCatId=id;document.querySelectorAll('[id^="cat-"]').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');}
+function selNatOpt(val,code,hasSip,el){
+  selNature=val;
+  selNatureCode=code;
+  document.querySelectorAll('.sub-opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('sipDateWrap').style.display=hasSip?'block':'none';
+}
+function toggleSipDate(){
+  const freq=document.getElementById('sipFreq').value;
+  document.getElementById('sipMonthWrap').style.display=freq==='monthly'?'block':'none';
+  document.getElementById('sipWeekWrap').style.display=freq==='weekly'?'block':'none';
+}
+
+function showFStep(n){
+  document.querySelectorAll('.fstep').forEach(s=>s.classList.remove('active'));
+  document.getElementById('cs'+n).classList.add('active');
+  document.getElementById('backBtn').style.display=n>1?'flex':'none';
+  const nb=document.getElementById('nextBtn');
+  nb.textContent=n===6?'✓ Create Task':'Next →';
+  nb.className=n===6?'btn btn-teal':'btn btn-navy';
+}
+function updateStepper(){
+  for(let i=1;i<=6;i++){
+    const d=document.getElementById('sd'+i);
+    d.classList.remove('cur','done');
+    d.querySelector('.stp-n').textContent=i<cStep?'✓':i;
+    if(i===cStep)d.classList.add('cur');
+    else if(i<cStep)d.classList.add('done');
+  }
+}
+async function nextStep(){
+  if(cStep===1){
+    if(!selVert){showToast('⚠️ Please select a vertical','error');return;}
+    const catData = await apiCall('GET', '/categories/' + selVert);
+    const cats = catData.success ? catData.categories : (CATEGORIES[selVert]||[]).map(c=>({id:c.id,code:c.id,name:c.name,icon:c.icon}));
+    document.getElementById('catGrid').innerHTML=cats.map(c=>`
+      <div class="opt" id="cat-${c.code||c.id}" onclick="selCatOpt('${c.name}','${c.code||c.id}',this)">
+        <div class="opt-icon">${c.icon}</div><div class="opt-name">${c.name}</div>
+      </div>`).join('');
+    cStep=2;
+  } else if(cStep===2){
+    if(!selCatId){showToast('⚠️ Please select a category','error');return;}
+    const natData = await apiCall('GET', '/natures/' + selCatId);
+    const nats = natData.success
+      ? natData.natures
+      : (NATURES[selCatId]||[]).map(n=>({
+          code: n.n.toLowerCase().replace(/[^a-z0-9]/g,'_').slice(0,20),
+          name: n.n, description: n.d, icon: n.i, is_sip: !!n.sip
+        }));
+    document.getElementById('natureGrid').innerHTML=nats.map(n=>`
+      <div class="sub-opt" onclick="selNatOpt('${(n.name||'').replace(/'/g,"\\'")}','${n.code||''}',${!!(n.is_sip)},this)">
+        <div class="so-icon">${n.icon||'📋'}</div>
+        <div><div class="so-name">${n.name||''}</div><div class="so-desc">${n.description||''}</div></div>
+      </div>`).join('');
+    document.getElementById('sipDateWrap').style.display='none';
+    cStep=3;
+  } else if(cStep===3){
+    if(!selNature){showToast('⚠️ Please select the nature of transaction','error');return;}
+    if(selVert==='dist'){cStep=4;}else{selTxcat='ca_work';cStep=5;}
+  } else if(cStep===4){
+    if(!selTxcat){showToast('⚠️ Please select Financial or Non-Financial','error');return;}
+    cStep=5;
+  } else if(cStep===5){
+    const nm=document.getElementById('cName'),mb=document.getElementById('cMobile');
+    let ok=true;
+    if(!nm.value.trim()){nm.classList.add('err');ok=false;}else nm.classList.remove('err');
+    if(!mb.value.trim()){mb.classList.add('err');ok=false;}else mb.classList.remove('err');
+    if(!ok){showToast('⚠️ Client name and mobile are required','error');return;}
+    cStep=6;
+  } else if(cStep===6){
+    const ttl=document.getElementById('tTitle'),asg=document.getElementById('tAssign'),due=document.getElementById('tDue');
+    let ok=true;
+    if(!ttl.value.trim()){ttl.classList.add('err');ok=false;}else ttl.classList.remove('err');
+    if(!asg.value){asg.classList.add('err');ok=false;}else asg.classList.remove('err');
+    if(!due.value){due.classList.add('err');ok=false;}else due.classList.remove('err');
+    if(!ok){showToast('⚠️ Please fill all required fields','error');return;}
+
+    // Get assignee ID from staff list
+    const staffData = await apiCall('GET','/staff');
+    const staffMember = staffData.staff ? staffData.staff.find(s=>s.full_name===asg.value.split(' (')[0]) : null;
+    const assignedId = staffMember ? staffMember.id : null;
+    if(!assignedId){showToast('⚠️ Could not find selected staff member','error');return;}
+
+    // Build subtasks array
+    const subtaskRows = document.querySelectorAll('.subtask-row');
+    const subtasks = [];
+    subtaskRows.forEach(row=>{
+      const stTitle = row.querySelector('input[type="text"]');
+      if(stTitle && stTitle.value.trim()){
+        subtasks.push({ title: stTitle.value.trim() });
+      }
+    });
+
+    // Call create task API
+    const payload = {
+      verticalCode:  selVert,
+      categoryCode:  selCatId,
+      natureCode:    selNatureCode,
+      txType:        selTxcat==='ft'?'Financial Transaction':selTxcat==='nft'?'Non-Financial':selVert==='ca'?'CA Work':'Broking Work',
+      clientName:    document.getElementById('cName').value.trim(),
+      clientFather:  document.getElementById('cFather').value.trim()||null,
+      clientMobile:  document.getElementById('cMobile').value.trim(),
+      clientEmail:   document.getElementById('cEmail').value.trim()||null,
+      title:         ttl.value.trim(),
+      description:   document.getElementById('tDesc').value.trim()||null,
+      priority:      document.getElementById('tPri').value,
+      proofRequired: document.getElementById('tProof').value,
+      dueDate:       due.value,
+      assignedTo:    assignedId,
+      subtasks
+    };
+
+    const data = await apiCall('POST', '/tasks', payload);
+    if(!data.success){ showToast('❌ '+data.error,'error'); return; }
+
+    closeCreate();
+    showToast('✅ Task created and assigned successfully!','success');
+    await loadDashboard();
+    refreshCounts();
+    return;
+  }
+  updateStepper();showFStep(cStep);
+}
+function prevStep(){
+  if(cStep>1){
+    if(cStep===5&&selVert!=='dist')cStep=3;
+    else cStep--;
+    updateStepper();showFStep(cStep);
+  }
+}
+
+// Subtask management
+let stCounter=0;
+function addSubtask(){
+  stCounter++;
+  const id=`st-${stCounter}`;
+  const div=document.createElement('div');
+  div.className='subtask-row';
+  div.id=id;
+  div.innerHTML=`
+    <div class="subtask-row-head">
+      <span class="subtask-lbl">Subtask ${stCounter}</span>
+      <button class="subtask-remove" onclick="removeSubtask('${id}')">✕</button>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>Subtask Title <span class="req">*</span></label><input type="text" placeholder="e.g. Collect documents from client"></div>
+      <div class="fg"><label>Assign To</label>
+        <select>${USERS.map(u=>`<option>${u.name}</option>`).join('')}</select>
+      </div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label>Due Date</label><input type="date"></div>
+      <div class="fg"><label>Instructions</label><input type="text" placeholder="Brief instruction for assignee"></div>
+    </div>`;
+  document.getElementById('subtasksList').appendChild(div);
+}
+function removeSubtask(id){document.getElementById(id)?.remove();}
+
+// ═══════════════ USER MANAGEMENT ═══════════════
+// FIX: validation + persists to grid
+function createUser(){
+  const name=document.getElementById('newName'),email=document.getElementById('newEmail'),role=document.getElementById('newRole');
+  let ok=true;
+  [name,email,role].forEach(el=>{
+    if(!el.value.trim()){el.classList.add('err');ok=false;}
+    else el.classList.remove('err');
+  });
+  if(!ok){showToast('⚠️ Please fill all required fields (Name, Email, Role)','error');return;}
+  const initials=name.value.trim().split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const cols=['linear-gradient(135deg,#1e40af,#3b82f6)','linear-gradient(135deg,#065f46,#10b981)','linear-gradient(135deg,#6b21a8,#a855f7)','linear-gradient(135deg,#c2410c,#f97316)'];
+  const roleMap={'Admin / Partner':'r-admin','Operations Manager':'r-mgr','Relationship Manager (RM)':'r-rm','Back Office Operator':'r-bo','KYC Executive':'r-kyc','CA / Tax Specialist':'r-ca'};
+  USERS.push({
+    name:name.value.trim(),email:email.value.trim(),
+    mobile:document.getElementById('newMobile').value.trim()||'—',
+    role:role.value,
+    vertical:document.getElementById('newVertical').value,
+    active:0,done:0,eff:0,
+    av:initials,col:cols[USERS.length%cols.length],
+    roleClass:roleMap[role.value]||'r-bo',
+  });
+  // FIX: reset form after creation
+  ['newName','newEmail','newMobile'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('newRole').value='';
+  document.getElementById('newVertical').value='All Verticals';
+  // FIX: re-render grid with new user
+  renderUsersGrid();
+  refreshAssignDropdown();
+  showToast(`✅ User ${name.value||'New User'} created successfully!`,'success');
+}
+
+function renderUsersGrid(){
+  const grid=document.getElementById('usersGrid');
+  if(!grid) return;
+  grid.innerHTML=USERS.map(u=>`
+    <div class="uc">
+      <div class="uc-top">
+        <div class="uc-av" style="background:${u.col}">${u.av}</div>
+        <div><div class="uc-name">${u.name}</div><span class="uc-role ${u.roleClass}">${u.role}</span></div>
+      </div>
+      <div class="uc-stats">
+        <div class="uc-stat"><div class="uc-stat-v">${u.active}</div><div class="uc-stat-l">Active</div></div>
+        <div class="uc-div"></div>
+        <div class="uc-stat"><div class="uc-stat-v">${u.done}</div><div class="uc-stat-l">Done</div></div>
+        <div class="uc-div"></div>
+        <div class="uc-stat"><div class="uc-stat-v" style="color:${u.eff>=90?'var(--green)':u.eff>=75?'var(--gold)':'var(--red)'}">${u.eff?u.eff+'%':'New'}</div><div class="uc-stat-l">Efficiency</div></div>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════ TOAST ═══════════════
+function statusLabel(s){
+  return {pending:'Pending',inprogress:'In Progress',postsales:'Post-Sales F/U',done:'Completed'}[s]||s;
+}
+
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast'+(type?' '+type:'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3400);
+}
+
+// Close overlays on bg click
+['createOverlay','detailOverlay','sendbackOverlay'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');});
+});
+
+// ═══════════════ API CONFIG ═══════════════
+const API = `http://${window.location.hostname}:5000/api`;
+let authToken = null;
+
+async function apiCall(method, endpoint, body=null) {
+  const opts = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(authToken ? { 'Authorization': 'Bearer ' + authToken } : {})
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  try {
+    const res = await fetch(API + endpoint, opts);
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error('API error:', err);
+    showToast('⚠️ Could not connect to server', 'error');
+    return { success: false, error: err.message };
+  }
+}
+
+// ═══════════════ INIT ═══════════════
+updateBC();
+misDraw();
+</script>
+</body>
+</html>
