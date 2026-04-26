@@ -58,6 +58,8 @@ app.use('/api/users',     usersRoutes);     // /api/users (GET, POST, GET/:id)
 app.use('/api/mis',       misRoutes);       // /api/mis/counts, /api/mis/tasks/:categoryCode
 const { serveFile } = require('./middleware/fileUpload');
 app.get('/api/files/:proofId', auth, serveFile);
+const adminRoutes = require('./routes/admin');
+app.use('/api/admin', adminRoutes);
 
 // ── CATCH-ALL for unknown routes ──────────────────────────
 app.use((req, res) => {
