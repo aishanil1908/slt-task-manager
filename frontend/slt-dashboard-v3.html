@@ -388,18 +388,9 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--navy);min-
     </div>
     <h2>Welcome Back</h2>
     <p>Sign in to access your task dashboard</p>
-    <div class="lf"><label>Username <span class="req">*</span></label><input type="text" id="loginUser" placeholder="Enter username"></div>
-    <div class="lf"><label>Login As (Demo Role)</label>
-      <select id="loginRole">
-        <option value="admin">Admin / Partner</option>
-        <option value="mgr">Operations Manager</option>
-        <option value="rm">Relationship Manager</option>
-        <option value="bo">Back Office Operator</option>
-        <option value="kyc">KYC Executive</option>
-      </select>
-    </div>
+    <div class="lf"><label>Username <span class="req">*</span></label><input type="text" id="loginUser" placeholder="Enter username" onkeydown="if(event.key==='Enter')document.getElementById('loginPassword').focus()"></div>
+    <div class="lf"><label>Password <span class="req">*</span></label><input type="password" id="loginPassword" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <button class="login-btn" onclick="doLogin()">Sign In →</button>
-    <div class="login-hint">🔐 Pilot mode — enter any username and select role to proceed.</div>
     <div style="text-align:center;margin-top:16px;">
     <a href="slt-admin-panel.html" style="font-size:12px;color:#64748b;text-decoration:none;">⚙️ Admin Login →</a>
     </div>
@@ -909,16 +900,22 @@ function refreshCounts(){
 // ═══════════════ LOGIN / LOGOUT ═══════════════
 async function doLogin(){
   const u=document.getElementById('loginUser').value.trim();
-  const r=document.getElementById('loginRole').value;
+  const p=document.getElementById('loginPassword').value;
   if(!u){
     document.getElementById('loginUser').classList.add('field-err');
     showToast('⚠️ Please enter a username','error');
     return;
   }
+  if(!p){
+    document.getElementById('loginPassword').classList.add('field-err');
+    showToast('⚠️ Please enter a password','error');
+    return;
+  }
   document.getElementById('loginUser').classList.remove('field-err');
+  document.getElementById('loginPassword').classList.remove('field-err');
 
   // Call real login API
-  const data = await apiCall('POST', '/login', { username: u });
+  const data = await apiCall('POST', '/login', { username: u, password: p });
 
   if(!data.success){
     showToast('❌ ' + data.error, 'error');
@@ -1046,8 +1043,9 @@ function doLogout(){
   document.getElementById('loginPage').style.display='flex';
   // FIX: clear login form on logout
   document.getElementById('loginUser').value='';
-  document.getElementById('loginRole').value='admin';
+  document.getElementById('loginPassword').value='';
   document.getElementById('loginUser').classList.remove('field-err');
+  document.getElementById('loginPassword').classList.remove('field-err');
   curPanel='';curDetailId=null;
 }
 
