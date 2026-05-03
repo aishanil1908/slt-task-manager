@@ -60,6 +60,7 @@ const { serveFile } = require('./middleware/fileUpload');
 app.get('/api/files/:proofId', auth, serveFile);
 const adminRoutes = require('./routes/admin');
 app.use('/api/admin', adminRoutes);
+app.use('/api/clients',   require('./routes/clients'));
 
 // ── CATCH-ALL for unknown routes ──────────────────────────
 app.use((req, res) => {

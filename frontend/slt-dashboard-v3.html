@@ -358,6 +358,33 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--navy);min-
 .note-green{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;}
 .note-orange{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;}
 
+/* CLIENT MASTER — search, dropdown, selected card */
+.client-search-wrap{position:relative;}
+.client-search-wrap input{padding-right:34px;}
+.client-search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:16px;color:#94a3b8;cursor:pointer;padding:2px 5px;line-height:1;}
+.client-search-clear:hover{color:var(--navy);}
+.client-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;border:1.5px solid var(--border);border-radius:var(--r-sm);box-shadow:var(--sh-lg);z-index:200;max-height:240px;overflow-y:auto;}
+.client-dd-item{display:flex;align-items:center;gap:10px;padding:10px 13px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s;}
+.client-dd-item:last-child{border-bottom:none;}
+.client-dd-item:hover{background:var(--surface2);}
+.client-dd-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--teal));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;flex-shrink:0;}
+.client-dd-name{font-size:13px;font-weight:700;color:var(--navy);}
+.client-dd-sub{font-size:11px;color:#64748b;margin-top:1px;}
+.client-dd-empty{padding:14px 13px;text-align:center;color:#94a3b8;font-size:13px;}
+.client-dd-create{display:flex;align-items:center;gap:8px;padding:10px 13px;cursor:pointer;color:var(--teal);font-size:13px;font-weight:700;background:#f0fdf9;border-top:1px solid var(--border);}
+.client-dd-create:hover{background:#d1fae5;}
+.client-selected-card{background:var(--surface2);border:2px solid var(--teal);border-radius:var(--r-sm);padding:13px 15px;margin-top:4px;}
+.client-card-inner{display:flex;align-items:center;gap:12px;}
+.client-card-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--teal));display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:white;flex-shrink:0;}
+.client-card-info{flex:1;min-width:0;}
+.client-card-name{font-size:14px;font-weight:800;color:var(--navy);}
+.client-card-detail{font-size:12px;color:#64748b;margin-top:2px;}
+.client-change-btn{background:none;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:5px 12px;font-size:12px;font-weight:700;color:#64748b;cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap;flex-shrink:0;}
+.client-change-btn:hover{border-color:var(--teal);color:var(--teal);}
+.client-new-form{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-top:4px;}
+.client-or-divider{text-align:center;margin:10px 0;font-size:12px;color:#94a3b8;display:flex;align-items:center;gap:8px;}
+.client-or-divider::before,.client-or-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
 /* ACTIONS */
 .act-row{display:flex;gap:9px;flex-wrap:wrap;}
 
@@ -388,12 +415,18 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--navy);min-
     </div>
     <h2>Welcome Back</h2>
     <p>Sign in to access your task dashboard</p>
-    <div class="lf"><label>Username <span class="req">*</span></label><input type="text" id="loginUser" placeholder="Enter username" onkeydown="if(event.key==='Enter')document.getElementById('loginPassword').focus()"></div>
-    <div class="lf"><label>Password <span class="req">*</span></label><input type="password" id="loginPassword" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="login-btn" onclick="doLogin()">Sign In →</button>
-    <div style="text-align:center;margin-top:16px;">
-    <a href="slt-admin-panel.html" style="font-size:12px;color:#64748b;text-decoration:none;">⚙️ Admin Login →</a>
+    <div class="lf"><label>Username <span class="req">*</span></label><input type="text" id="loginUser" placeholder="Enter username"></div>
+    <div class="lf"><label>Login As (Demo Role)</label>
+      <select id="loginRole">
+        <option value="admin">Admin / Partner</option>
+        <option value="mgr">Operations Manager</option>
+        <option value="rm">Relationship Manager</option>
+        <option value="bo">Back Office Operator</option>
+        <option value="kyc">KYC Executive</option>
+      </select>
     </div>
+    <button class="login-btn" onclick="doLogin()">Sign In →</button>
+    <div class="login-hint">🔐 Pilot mode — enter any username and select role to proceed.</div>
   </div>
 </div>
 
@@ -596,16 +629,85 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--navy);min-
       </div>
       <div class="fstep" id="cs5">
         <div class="step-t">Client Information</div>
-        <div class="step-s">Inline capture — no client master required at this stage</div>
-        <div class="fg-row">
-          <div class="fg"><label>Client Full Name <span class="req">*</span></label><input type="text" id="cName" placeholder="e.g. Ramesh Kumar Sharma"></div>
-          <div class="fg"><label>Father's / Spouse Name</label><input type="text" id="cFather" placeholder="e.g. Suresh Kumar Sharma"></div>
+        <div class="step-s">Search existing client or add a new one</div>
+
+        <!-- ── Search state (default visible) ── -->
+        <div id="clientSearchState">
+          <div class="fg client-search-wrap">
+            <label>Search Client <span class="req">*</span></label>
+            <input type="text" id="clientSearchInput"
+                   placeholder="Type name, mobile number, or PAN…"
+                   oninput="onClientSearch(this.value)"
+                   autocomplete="off">
+            <button class="client-search-clear" id="clientSearchClearBtn"
+                    onclick="clearClientSearch()" style="display:none" title="Clear">✕</button>
+            <div class="client-dropdown" id="clientDropdown" style="display:none"></div>
+          </div>
+
+          <div class="client-or-divider">or</div>
+
+          <button type="button" class="btn btn-ghost"
+                  style="width:100%;justify-content:center"
+                  onclick="showNewClientForm()">
+            ＋ &nbsp;Create New Client
+          </button>
         </div>
-        <div class="fg-row">
-          <div class="fg"><label>Mobile Number <span class="req">*</span></label><input type="tel" id="cMobile" placeholder="10-digit mobile"></div>
-          <div class="fg"><label>Email ID</label><input type="email" id="cEmail" placeholder="client@email.com"></div>
+
+        <!-- ── Selected client card (shown after selection) ── -->
+        <div id="clientSelectedState" style="display:none">
+          <div class="client-selected-card">
+            <div class="client-card-inner">
+              <div class="client-card-avatar" id="scAvatar"></div>
+              <div class="client-card-info">
+                <div class="client-card-name" id="scName"></div>
+                <div class="client-card-detail" id="scDetail"></div>
+              </div>
+              <button class="client-change-btn" onclick="clearClientSelection()">Change</button>
+            </div>
+          </div>
+          <div class="note note-green" style="margin-top:8px">✅ Client linked — proceed to the next step.</div>
         </div>
-        <div class="note note-orange">📌 Stored against this task for identification. Full client master in Phase 2.</div>
+
+        <!-- ── New client inline form (shown when + Create clicked) ── -->
+        <div id="clientNewState" style="display:none">
+          <div class="client-new-form">
+            <div class="divlbl" style="margin-bottom:12px">New Client Details</div>
+            <div class="fg-row">
+              <div class="fg">
+                <label>Client Full Name <span class="req">*</span></label>
+                <input type="text" id="ncName" placeholder="e.g. Ramesh Kumar Sharma">
+              </div>
+              <div class="fg">
+                <label>Father's / Spouse Name</label>
+                <input type="text" id="ncFather" placeholder="e.g. Suresh Kumar Sharma">
+              </div>
+            </div>
+            <div class="fg-row">
+              <div class="fg">
+                <label>Mobile Number <span class="req">*</span></label>
+                <input type="tel" id="ncMobile" placeholder="10-digit mobile" maxlength="10">
+              </div>
+              <div class="fg">
+                <label>Email ID</label>
+                <input type="email" id="ncEmail" placeholder="client@email.com">
+              </div>
+            </div>
+            <div class="fg-row" style="align-items:flex-end">
+              <div class="fg">
+                <label>PAN Number</label>
+                <input type="text" id="ncPan" placeholder="ABCDE1234F" maxlength="10"
+                       oninput="this.value=this.value.toUpperCase()">
+              </div>
+              <div class="fg" style="display:flex;gap:8px;align-items:flex-end;padding-bottom:0">
+                <button type="button" class="btn btn-ghost" style="flex:1"
+                        onclick="cancelNewClient()">Cancel</button>
+                <button type="button" class="btn" style="flex:1;background:var(--teal)"
+                        id="saveNewClientBtn" onclick="saveNewClient()">Save &amp; Select</button>
+              </div>
+            </div>
+          </div>
+          <div class="note note-blue" style="margin-top:8px">💡 Client will be saved to the client master and linked to this task.</div>
+        </div>
       </div>
       <div class="fstep" id="cs6">
         <div class="step-t">Task Details, Assignment & Subtasks</div>
@@ -847,6 +949,8 @@ let curPanel='';
 let curDetailId=null;
 let sendbackTaskId=null;
 let cStep=1,selVert='',selCat='',selCatId='',selNature='',selNatureCode='',selTxcat='';
+let selectedClientId=null,selectedClientData=null; // client master state
+let clientSearchTimer=null;                         // debounce timer
 let subtaskCount=0;
 let misBc=[];
 let misCtx={vert:'',cat:'',catId:'',tx:''};
@@ -900,22 +1004,16 @@ function refreshCounts(){
 // ═══════════════ LOGIN / LOGOUT ═══════════════
 async function doLogin(){
   const u=document.getElementById('loginUser').value.trim();
-  const p=document.getElementById('loginPassword').value;
+  const r=document.getElementById('loginRole').value;
   if(!u){
     document.getElementById('loginUser').classList.add('field-err');
     showToast('⚠️ Please enter a username','error');
     return;
   }
-  if(!p){
-    document.getElementById('loginPassword').classList.add('field-err');
-    showToast('⚠️ Please enter a password','error');
-    return;
-  }
   document.getElementById('loginUser').classList.remove('field-err');
-  document.getElementById('loginPassword').classList.remove('field-err');
 
   // Call real login API
-  const data = await apiCall('POST', '/login', { username: u, password: p });
+  const data = await apiCall('POST', '/login', { username: u });
 
   if(!data.success){
     showToast('❌ ' + data.error, 'error');
@@ -1043,9 +1141,8 @@ function doLogout(){
   document.getElementById('loginPage').style.display='flex';
   // FIX: clear login form on logout
   document.getElementById('loginUser').value='';
-  document.getElementById('loginPassword').value='';
+  document.getElementById('loginRole').value='admin';
   document.getElementById('loginUser').classList.remove('field-err');
-  document.getElementById('loginPassword').classList.remove('field-err');
   curPanel='';curDetailId=null;
 }
 
@@ -1428,39 +1525,15 @@ async function actionReopen(id){
   refreshCounts();
 }
 
-async function handleProofUpload(input, type) {
-  const file = input.files[0];
-  if (!file) return;
-
-  if (!curDetailId) { 
-    showToast('❌ No task selected', 'error'); 
-    return; 
-  }
-
-  const stage = (type === 'stage2proof') ? 2 : 4;
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('stage', stage);
-
-  showToast('📤 Uploading...', 'info');
-
-  try {
-    const response = await fetch(`${API}/tasks/${curDetailId}/proof`, {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + authToken },
-      body: formData
-    });
-    const data = await response.json();
-
-    if (data.success) {
-      showToast(`✅ ${file.name} uploaded successfully`, 'success');
-      await loadDashboard();
-      openDetail(curDetailId);
-    } else {
-      showToast('❌ Upload failed: ' + data.error, 'error');
-    }
-  } catch (err) {
-    showToast('❌ Upload error: ' + err.message, 'error');
+function handleProofUpload(input,type){
+  if(!input.files||!input.files[0]) return;
+  const fname=input.files[0].name;
+  if(type==='stage2proof' && curDetailId!==null){
+    const t=TASKS.find(x=>x.id===curDetailId);
+    if(t){ t.proofUploaded=true; showToast(`📎 Proof uploaded: ${fname}`,'success'); renderDetail(t); }
+  } else if(type==='stage4doc' && curDetailId!==null){
+    const t=TASKS.find(x=>x.id===curDetailId);
+    if(t){ t.s4docUploaded=true; showToast(`📎 Fulfillment doc uploaded: ${fname}`,'success'); renderDetail(t); }
   }
 }
 
@@ -1507,9 +1580,10 @@ function openCreate(){
   cStep=1;selVert='';selCat='';selCatId='';selNature='';selTxcat='';subtaskCount=0;
   document.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
   document.querySelectorAll('.sub-opt').forEach(o=>o.classList.remove('sel'));
-  ['cName','cFather','cMobile','cEmail','tTitle','tDesc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['tTitle','tDesc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('subtasksList').innerHTML='';
   document.getElementById('sipDateWrap').style.display='none';
+  resetClientState();
   refreshAssignDropdown();
   updateStepper();showFStep(1);
   document.getElementById('createOverlay').classList.add('active');
@@ -1591,11 +1665,10 @@ async function nextStep(){
     if(!selTxcat){showToast('⚠️ Please select Financial or Non-Financial','error');return;}
     cStep=5;
   } else if(cStep===5){
-    const nm=document.getElementById('cName'),mb=document.getElementById('cMobile');
-    let ok=true;
-    if(!nm.value.trim()){nm.classList.add('err');ok=false;}else nm.classList.remove('err');
-    if(!mb.value.trim()){mb.classList.add('err');ok=false;}else mb.classList.remove('err');
-    if(!ok){showToast('⚠️ Client name and mobile are required','error');return;}
+    if(!selectedClientId){
+      showToast('⚠️ Please select or create a client before continuing','error');
+      return;
+    }
     cStep=6;
   } else if(cStep===6){
     const ttl=document.getElementById('tTitle'),asg=document.getElementById('tAssign'),due=document.getElementById('tDue');
@@ -1627,10 +1700,7 @@ async function nextStep(){
       categoryCode:  selCatId,
       natureCode:    selNatureCode,
       txType:        selTxcat==='ft'?'Financial Transaction':selTxcat==='nft'?'Non-Financial':selVert==='ca'?'CA Work':'Broking Work',
-      clientName:    document.getElementById('cName').value.trim(),
-      clientFather:  document.getElementById('cFather').value.trim()||null,
-      clientMobile:  document.getElementById('cMobile').value.trim(),
-      clientEmail:   document.getElementById('cEmail').value.trim()||null,
+      clientId:      selectedClientId,
       title:         ttl.value.trim(),
       description:   document.getElementById('tDesc').value.trim()||null,
       priority:      document.getElementById('tPri').value,
@@ -1756,8 +1826,159 @@ function showToast(msg,type=''){
 });
 
 // ═══════════════ API CONFIG ═══════════════
-const API = `http://${window.location.hostname}:5000/api`;
+const API = window.location.port === '3000' ? 'http://localhost:5000/api' : `/api`;
 let authToken = null;
+
+// ═══════════════ CLIENT MASTER — SEARCH & SELECT ═══════════════
+
+function resetClientState(){
+  selectedClientId   = null;
+  selectedClientData = null;
+  if(clientSearchTimer){ clearTimeout(clientSearchTimer); clientSearchTimer=null; }
+  const inp = document.getElementById('clientSearchInput');
+  if(inp) inp.value='';
+  const dd = document.getElementById('clientDropdown');
+  if(dd){ dd.style.display='none'; dd.innerHTML=''; }
+  const cb = document.getElementById('clientSearchClearBtn');
+  if(cb) cb.style.display='none';
+  // Show search state, hide others
+  const ss = document.getElementById('clientSearchState');
+  const sc = document.getElementById('clientSelectedState');
+  const sn = document.getElementById('clientNewState');
+  if(ss) ss.style.display='';
+  if(sc) sc.style.display='none';
+  if(sn) sn.style.display='none';
+  // Clear new-client form fields
+  ['ncName','ncFather','ncMobile','ncEmail','ncPan'].forEach(id=>{
+    const el=document.getElementById(id); if(el){el.value='';el.classList.remove('err');}
+  });
+}
+
+function clearClientSearch(){
+  document.getElementById('clientSearchInput').value='';
+  document.getElementById('clientSearchClearBtn').style.display='none';
+  const dd=document.getElementById('clientDropdown');
+  dd.style.display='none'; dd.innerHTML='';
+}
+
+function onClientSearch(val){
+  const cb=document.getElementById('clientSearchClearBtn');
+  cb.style.display = val.length>0 ? '' : 'none';
+  const dd=document.getElementById('clientDropdown');
+  if(val.length<2){ dd.style.display='none'; dd.innerHTML=''; return; }
+  if(clientSearchTimer) clearTimeout(clientSearchTimer);
+  clientSearchTimer = setTimeout(()=>runClientSearch(val), 280);
+}
+
+async function runClientSearch(q){
+  const dd=document.getElementById('clientDropdown');
+  dd.innerHTML='<div class="client-dd-empty">Searching…</div>';
+  dd.style.display='';
+  const data = await apiCall('GET', '/clients/search?q='+encodeURIComponent(q));
+  if(!data.success){ dd.innerHTML='<div class="client-dd-empty">Search failed</div>'; return; }
+  const clients = data.clients||[];
+  let html='';
+  if(clients.length===0){
+    html='<div class="client-dd-empty">No matching clients found</div>';
+  } else {
+    clients.forEach(c=>{
+      const initials = c.client_name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      const detail   = [c.mobile, c.email, c.pan_number].filter(Boolean).join(' · ');
+      html+=`<div class="client-dd-item" onclick='selectClient(${JSON.stringify(c)})'>
+        <div class="client-dd-avatar">${initials}</div>
+        <div>
+          <div class="client-dd-name">${c.client_name}</div>
+          <div class="client-dd-sub">${detail||'—'}</div>
+        </div>
+      </div>`;
+    });
+  }
+  html+=`<div class="client-dd-create" onclick="showNewClientForm()">＋ Create new client</div>`;
+  dd.innerHTML=html;
+  dd.style.display='';
+}
+
+function selectClient(client){
+  selectedClientId   = client.id;
+  selectedClientData = client;
+  // Hide search state, show selected card
+  document.getElementById('clientSearchState').style.display='none';
+  document.getElementById('clientNewState').style.display='none';
+  // Populate card
+  const initials = client.client_name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('scAvatar').textContent  = initials;
+  document.getElementById('scName').textContent    = client.client_name;
+  const sub = [client.mobile, client.email, client.pan_number?`PAN: ${client.pan_number}`:''].filter(Boolean).join(' · ');
+  document.getElementById('scDetail').textContent  = sub||'No contact details';
+  document.getElementById('clientSelectedState').style.display='';
+}
+
+function clearClientSelection(){
+  resetClientState();
+}
+
+function showNewClientForm(){
+  document.getElementById('clientSearchState').style.display='none';
+  document.getElementById('clientSelectedState').style.display='none';
+  document.getElementById('clientNewState').style.display='';
+  document.getElementById('ncName').focus();
+  // Pre-fill name from search box if user typed something
+  const q=(document.getElementById('clientSearchInput')||{}).value||'';
+  if(q.length>1 && /^[a-zA-Z\s]+$/.test(q)){
+    document.getElementById('ncName').value=q;
+  }
+}
+
+function cancelNewClient(){
+  // Go back to search state
+  document.getElementById('clientNewState').style.display='none';
+  document.getElementById('clientSearchState').style.display='';
+}
+
+async function saveNewClient(){
+  const nm  = document.getElementById('ncName');
+  const mb  = document.getElementById('ncMobile');
+  const btn = document.getElementById('saveNewClientBtn');
+  let ok=true;
+  if(!nm.value.trim()){nm.classList.add('err');ok=false;}else nm.classList.remove('err');
+  if(!mb.value.trim()||!/^\d{10}$/.test(mb.value.trim())){mb.classList.add('err');ok=false;}else mb.classList.remove('err');
+  if(!ok){showToast('⚠️ Name and 10-digit mobile are required','error');return;}
+
+  btn.disabled=true; btn.textContent='Saving…';
+  const data = await apiCall('POST','/clients',{
+    clientName:        nm.value.trim(),
+    fatherSpouseName:  document.getElementById('ncFather').value.trim()||null,
+    mobile:            mb.value.trim(),
+    email:             document.getElementById('ncEmail').value.trim()||null,
+    panNumber:         document.getElementById('ncPan').value.trim()||null
+  });
+  btn.disabled=false; btn.textContent='Save & Select';
+
+  if(!data.success){
+    // Duplicate? Offer to link existing instead
+    if(data.existingClient){
+      if(confirm(`A client with this mobile already exists:\n"${data.existingClient.client_name}"\n\nLink this client to the task instead?`)){
+        // Fetch full record and select it
+        const fd=await apiCall('GET','/clients/'+data.existingClient.id);
+        if(fd.success) selectClient(fd.client);
+      }
+    } else {
+      showToast('❌ '+data.error,'error');
+    }
+    return;
+  }
+  showToast('✅ Client saved','success');
+  selectClient(data.client);
+}
+
+// Close client dropdown when clicking outside
+document.addEventListener('click', e=>{
+  const wrap = document.querySelector('.client-search-wrap');
+  if(wrap && !wrap.contains(e.target)){
+    const dd=document.getElementById('clientDropdown');
+    if(dd) dd.style.display='none';
+  }
+});
 
 async function apiCall(method, endpoint, body=null) {
   const opts = {

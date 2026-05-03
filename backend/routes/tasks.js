@@ -29,7 +29,7 @@ router.post('/', auth, async (req, res) => {
   const {
     verticalCode, categoryCode, natureCode, txType,
     sipFrequency, sipDate, sipDay,
-    clientName, clientFather, clientMobile, clientEmail,
+    clientId,                                          // ← Phase 3: client master FK
     title, description, priority, proofRequired, dueDate,
     assignedTo,
     subtasks   // array of { title, instructions, assignedTo, dueDate }
@@ -39,14 +39,29 @@ router.post('/', auth, async (req, res) => {
   if (!verticalCode || !categoryCode || !natureCode || !txType) {
     return res.status(400).json({ success: false, error: 'Vertical, category, nature and TX type are required' });
   }
-  if (!clientName || !clientMobile) {
-    return res.status(400).json({ success: false, error: 'Client name and mobile are required' });
+  if (!clientId) {
+    return res.status(400).json({ success: false, error: 'Client is required — select or create a client' });
   }
   if (!title || !dueDate || !assignedTo) {
     return res.status(400).json({ success: false, error: 'Title, due date and assignee are required' });
   }
 
   try {
+    // Resolve client from master table
+    // Also populates denormalized columns so existing views/queries keep working
+    const clientResult = await query(
+      'SELECT client_name, father_spouse_name, mobile, email FROM clients WHERE id = $1 AND is_active = TRUE',
+      [clientId]
+    );
+    if (!clientResult.rows[0]) {
+      return res.status(400).json({ success: false, error: 'Client not found — please select a valid client' });
+    }
+    const cl = clientResult.rows[0];
+    const clientName   = cl.client_name;
+    const clientFather = cl.father_spouse_name;
+    const clientMobile = cl.mobile;
+    const clientEmail  = cl.email;
+
     // Resolve IDs from codes
     const vertResult = await query('SELECT id FROM verticals WHERE code = $1', [verticalCode]);
     const catResult  = await query('SELECT id, default_ps_template, requires_postsales FROM categories WHERE code = $1', [categoryCode]);
@@ -78,19 +93,19 @@ router.post('/', auth, async (req, res) => {
       `INSERT INTO tasks (
          vertical_id, category_id, nature_id, tx_type,
          sip_frequency, sip_date, sip_day, ps_template,
-         client_name, client_father, client_mobile, client_email,
+         client_id, client_name, client_father, client_mobile, client_email,
          title, description, priority, proof_required, due_date,
          assigned_to, created_by,
          status, stage
        ) VALUES (
-         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,
-         $13,$14,$15,$16,$17,$18,$19,
+         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,
+         $14,$15,$16,$17,$18,$19,$20,
          'pending', 1
        ) RETURNING id`,
       [
         verticalId, categoryId, natureId, txType,
         sipFrequency || null, sipDate || null, sipDay || null, psTemplate,
-        clientName, clientFather || null, clientMobile, clientEmail || null,
+        clientId, clientName, clientFather || null, clientMobile, clientEmail || null,
         title, description || null,
         priority || 'Normal', proofRequired || 'Yes — Mandatory', dueDate,
         assignedTo, req.user.id
