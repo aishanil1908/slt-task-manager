@@ -175,11 +175,14 @@ router.get('/:id', auth, async (req, res) => {
 
     const task = result.rows[0];
 
-    // Subtasks
+    // Subtasks (include completed_by name for display)
     const subtasks = await query(
-      `SELECT s.*, u.full_name AS assigned_to_name
+      `SELECT s.*,
+              ua.full_name AS assigned_to_name,
+              uc.full_name AS completed_by_name
        FROM subtasks s
-       LEFT JOIN users u ON s.assigned_to = u.id
+       LEFT JOIN users ua ON s.assigned_to = ua.id
+       LEFT JOIN users uc ON s.completed_by = uc.id
        WHERE s.task_id = $1
        ORDER BY s.display_order`,
       [req.params.id]
@@ -398,6 +401,31 @@ router.post('/:id/fulfillment', auth, async (req, res) => {
   } catch (err) {
     console.error('Fulfillment error:', err);
     res.status(500).json({ success: false, error: 'Could not save fulfillment data: ' + err.message });
+  }
+});
+
+// ── SUBTASK COMPLETE / UNCOMPLETE ────────────────────────
+// PUT /api/tasks/:taskId/subtasks/:subtaskId/complete
+// Body: { completed: true|false }
+router.put('/:taskId/subtasks/:subtaskId/complete', auth, async (req, res) => {
+  try {
+    const isDone = req.body.completed !== false; // default true
+    const result = await query(
+      `UPDATE subtasks
+       SET is_completed = $1,
+           completed_at = CASE WHEN $1 THEN NOW() ELSE NULL END,
+           completed_by = CASE WHEN $1 THEN $2 ELSE NULL END
+       WHERE id = $3 AND task_id = $4
+       RETURNING *`,
+      [isDone, req.user.id, req.params.subtaskId, req.params.taskId]
+    );
+    if (!result.rows.length) {
+      return res.status(404).json({ success: false, error: 'Subtask not found' });
+    }
+    res.json({ success: true, subtask: result.rows[0] });
+  } catch (err) {
+    console.error('Subtask complete error:', err);
+    res.status(500).json({ success: false, error: 'Could not update subtask: ' + err.message });
   }
 });
 

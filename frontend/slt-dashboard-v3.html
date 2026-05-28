@@ -352,6 +352,33 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--navy);min-
 .proof-box input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
 .proof-uploaded{background:#ecfdf5;border:1.5px solid #a7f3d0;border-radius:var(--r-sm);padding:12px;font-size:12px;color:var(--green);font-weight:600;display:flex;align-items:center;gap:8px;}
 
+/* PROOF FILES LIST */
+.proof-files-list{margin-bottom:10px;}
+.proof-file-row{display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 13px;margin-bottom:8px;}
+.proof-file-icon{font-size:20px;flex-shrink:0;}
+.proof-file-info{flex:1;min-width:0;}
+.proof-file-name{font-size:13px;font-weight:700;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.proof-file-meta{font-size:11px;color:#94a3b8;margin-top:2px;}
+.btn-view{background:#eff6ff;color:var(--blue);border:1.5px solid #bfdbfe;padding:7px 13px;border-radius:var(--r-sm);font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s;white-space:nowrap;flex-shrink:0;}
+.btn-view:hover{background:#dbeafe;border-color:var(--blue);}
+
+/* SUBTASK ITEMS — detail view */
+.subtasks-progress{margin-bottom:12px;}
+.subtasks-prog-text{font-size:11px;font-weight:700;color:#64748b;margin-bottom:5px;}
+.subtasks-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+.subtasks-fill{height:100%;background:var(--teal);border-radius:3px;transition:width .3s;}
+.subtask-item{display:flex;flex-direction:column;gap:4px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:8px;transition:background .2s;}
+.subtask-item.st-done{background:#ecfdf5;border-color:#a7f3d0;}
+.st-check-wrap{display:flex;align-items:flex-start;gap:9px;}
+.st-check{width:16px;height:16px;accent-color:var(--teal);cursor:pointer;flex-shrink:0;margin-top:1px;}
+.st-check:disabled{cursor:not-allowed;opacity:.5;}
+.st-title{font-size:13px;font-weight:700;color:var(--navy);line-height:1.4;}
+.st-done .st-title{text-decoration:line-through;color:#94a3b8;}
+.st-instructions{font-size:11px;color:#64748b;padding-left:25px;margin-top:3px;line-height:1.4;}
+.st-meta{display:flex;gap:14px;flex-wrap:wrap;padding-left:25px;margin-top:5px;}
+.st-meta span{font-size:11px;color:#94a3b8;font-weight:600;}
+.st-done-by{color:var(--green)!important;}
+
 /* NOTES */
 .note{padding:10px 13px;border-radius:var(--r-sm);font-size:12px;font-weight:600;display:flex;align-items:flex-start;gap:8px;margin-top:10px;}
 .note-blue{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;}
@@ -783,6 +810,11 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--navy);min-
           <div class="s3-record-body" id="s3RecordBody">—</div>
         </div>
       </div>
+      <!-- Subtasks (shown when task has subtasks) -->
+      <div class="det-sec" id="subtasksSection" style="display:none">
+        <h4>Subtasks</h4>
+        <div id="subtasksContent"></div>
+      </div>
       <div class="det-sec" id="proofSection">
         <h4>Stage 2 Proof — Payment / Action Evidence</h4>
         <div id="proofContent">
@@ -795,7 +827,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--navy);min-
           <h5 id="psTitle">Fulfillment Details</h5>
           <div id="psFields"></div>
         </div>
-        <div class="proof-box">📎 Upload fulfillment document — Policy, Folio statement, NAV confirmation, etc.<input type="file" onchange="handleProofUpload(this,'stage4doc')"></div>
+        <div id="psDocArea"></div>
       </div>
       <div class="det-sec">
         <h4>Manager Actions</h4>
@@ -1350,12 +1382,25 @@ function openCreateWithCtx(vertId,catId){
 }
 
 // ═══════════════ TASK DETAIL MODAL ═══════════════
-function openDetail(id){
+async function openDetail(id){
   const t=TASKS.find(x=>x.id===id);
   if(!t){showToast('⚠️ Task not found','error');return;}
   curDetailId=id;
+  // Show modal immediately with what we have
   renderDetail(t);
   document.getElementById('detailOverlay').classList.add('active');
+  // Fetch full detail from API to get proofs + subtasks
+  try {
+    const detail = await apiCall('GET', '/tasks/'+id);
+    if(detail.success){
+      // Enrich the in-memory task with full detail data
+      t.proofs    = detail.task.proofs    || [];
+      t.subtasks  = detail.task.subtasks  || [];
+      t.email     = t.email  || detail.task.client_email;
+      t.father    = t.father || detail.task.client_father;
+      renderDetail(t); // re-render with enriched data
+    }
+  } catch(e){ /* non-fatal — basic info already showing */ }
 }
 
 function renderDetail(t){
@@ -1385,32 +1430,118 @@ function renderDetail(t){
       <div class="stg-label">${s}</div>
     </div>`).join('');
 
-  // FIX: Stage 3 confirmation record
+  // Stage 3 confirmation record
   const s3sec=document.getElementById('s3RecordSection');
   if(t.s3record && t.stage>=4){
     s3sec.style.display='block';
     document.getElementById('s3RecordBody').innerHTML=`Confirmed by <strong>${t.s3record.by}</strong> on ${t.s3record.at}<br>${t.s3record.note?`<em>"${t.s3record.note}"</em>`:''}`;
   } else { s3sec.style.display='none'; }
 
-  // Proof section
-  const proofSec=document.getElementById('proofContent');
-  if(t.proofUploaded){
-    proofSec.innerHTML=`<div class="proof-uploaded">✅ Proof uploaded — Stage 2 evidence on file</div>`;
+  // ── Subtasks section ──────────────────────────────────────
+  const subSec = document.getElementById('subtasksSection');
+  const subtasks = t.subtasks || [];
+  if(subtasks.length > 0){
+    subSec.style.display='block';
+    const doneCount = subtasks.filter(s=>s.is_completed).length;
+    const pct = Math.round(doneCount/subtasks.length*100);
+    const isManager = ['Admin / Partner','Operations Manager','Relationship Manager'].includes(currentUser.role);
+    let subHtml = `
+      <div class="subtasks-progress">
+        <div class="subtasks-prog-text">${doneCount} of ${subtasks.length} completed</div>
+        <div class="subtasks-bar"><div class="subtasks-fill" style="width:${pct}%"></div></div>
+      </div>`;
+    subtasks.forEach(st=>{
+      const canToggle = (isManager || currentUser.id === st.assigned_to) && t.status !== 'done';
+      const dueTxt = st.due_date ? st.due_date.slice(0,10) : '';
+      subHtml += `
+        <div class="subtask-item ${st.is_completed?'st-done':''}" id="st-${st.id}">
+          <label class="st-check-wrap">
+            <input type="checkbox" class="st-check" ${st.is_completed?'checked':''}
+              ${canToggle?'':'disabled'}
+              onchange="toggleSubtask(${st.id},this.checked,${t.id})">
+            <span class="st-title">${st.title}</span>
+          </label>
+          ${st.instructions?`<div class="st-instructions">${st.instructions}</div>`:''}
+          <div class="st-meta">
+            ${st.assigned_to_name?`<span>👤 ${st.assigned_to_name}</span>`:''}
+            ${dueTxt?`<span>📅 ${dueTxt}</span>`:''}
+            ${st.is_completed?`<span class="st-done-by">✅ Done by ${st.completed_by_name||'—'}</span>`:''}
+          </div>
+        </div>`;
+    });
+    document.getElementById('subtasksContent').innerHTML = subHtml;
   } else {
-    proofSec.innerHTML=`<div class="proof-box">📎 Upload proof — payment screenshot, submission confirmation, reference number<input type="file" onchange="handleProofUpload(this,'stage2proof')"></div>`;
+    subSec.style.display='none';
   }
+
+  // ── Proof section (Stage 2) ───────────────────────────────
+  const proofSec=document.getElementById('proofContent');
+  const proofs2=(t.proofs||[]).filter(p=>p.stage===2);
+  let proofHtml='';
+  // Fallback: proofs not yet fetched but flag says something was uploaded
+  if(proofs2.length===0 && t.proofUploaded && t.proofs===undefined){
+    proofHtml+=`<div class="proof-uploaded">✅ Proof uploaded — open task to view file</div>`;
+  }
+  if(proofs2.length>0){
+    proofHtml+='<div class="proof-files-list">';
+    proofs2.forEach(p=>{
+      const dt = p.uploaded_at ? new Date(p.uploaded_at).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) : '';
+      const kb = p.file_size ? (p.file_size>1048576?(p.file_size/1048576).toFixed(1)+' MB':Math.round(p.file_size/1024)+' KB') : '';
+      proofHtml+=`
+        <div class="proof-file-row">
+          <div class="proof-file-icon">📎</div>
+          <div class="proof-file-info">
+            <div class="proof-file-name">${p.original_file_name||p.file_name}</div>
+            <div class="proof-file-meta">By ${p.uploaded_by_name} · ${dt}${kb?' · '+kb:''}</div>
+          </div>
+          <button class="btn-view" onclick="viewProof(${p.id})">👁 View</button>
+        </div>`;
+    });
+    proofHtml+='</div>';
+  }
+  // Show upload box unless task is fully done
+  if(t.status!=='done'){
+    proofHtml+=`<div class="proof-box" style="margin-top:${proofs2.length>0?'8px':'0'}">📎 Upload proof — payment screenshot, submission confirmation, reference number<input type="file" onchange="handleProofUpload(this,'stage2proof')"></div>`;
+  } else if(proofs2.length===0){
+    proofHtml+=`<div class="proof-uploaded" style="color:#94a3b8;background:#f8fafc;border-color:var(--border);">No proof was uploaded for this task.</div>`;
+  }
+  proofSec.innerHTML=proofHtml;
 
   // Post-sales section
   const psSec=document.getElementById('psSection');
-  if((t.status==='postsales'||t.stage===4) && t.psTemplate){
+  if((t.status==='postsales'||t.stage===4||t.status==='done') && t.psTemplate && t.psTemplate!=='none'){
     psSec.style.display='block';
     const tmpl=PS_TEMPLATES[t.psTemplate]||'';
     const ptitles={mf_purchase:'Mutual Fund Purchase — Fulfillment',mf_redemption:'Mutual Fund Redemption — Fulfillment',pms:'PMS — Account Details',aif:'AIF — Account Setup',insurance:'Insurance — Policy Details',fd:'Fixed Deposit — Confirmation',bank:'Banking — Account Details',tax:'Tax Filing — Acknowledgment',egold:'eGold/eSilver — Order Details',ca_work:'CA Work — Filing Confirmation',broking:'Broking — Account Details'};
     document.getElementById('psTitle').textContent=ptitles[t.psTemplate]||'Fulfillment Details';
     document.getElementById('psFields').innerHTML=tmpl||'<p style="font-size:12px;color:#64748b">No specific template.</p>';
-    if(t.s4docUploaded){
-      psSec.querySelector('.proof-box').outerHTML='<div class="proof-uploaded">✅ Fulfillment document uploaded</div>';
+    // Stage 4 proof files — same rich display as Stage 2
+    const proofs4=(t.proofs||[]).filter(p=>p.stage===4);
+    let s4Html='';
+    if(proofs4.length>0){
+      s4Html+='<div class="proof-files-list" style="margin-top:14px;">';
+      proofs4.forEach(p=>{
+        const dt=p.uploaded_at?new Date(p.uploaded_at).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}):'';
+        const kb=p.file_size?(p.file_size>1048576?(p.file_size/1048576).toFixed(1)+' MB':Math.round(p.file_size/1024)+' KB'):'';
+        s4Html+=`
+          <div class="proof-file-row">
+            <div class="proof-file-icon">📄</div>
+            <div class="proof-file-info">
+              <div class="proof-file-name">${p.original_file_name||p.file_name}</div>
+              <div class="proof-file-meta">By ${p.uploaded_by_name} · ${dt}${kb?' · '+kb:''}</div>
+            </div>
+            <button class="btn-view" onclick="viewProof(${p.id})">👁 View</button>
+          </div>`;
+      });
+      s4Html+='</div>';
     }
+    // Show upload box unless task is done
+    if(t.status!=='done'){
+      s4Html+=`<div class="proof-box" style="margin-top:${proofs4.length>0?'8px':'14px'}">📎 Upload fulfillment document — Policy, Folio statement, NAV confirmation, etc.<input type="file" onchange="handleProofUpload(this,'stage4doc')"></div>`;
+    } else if(proofs4.length===0){
+      s4Html+=`<div class="proof-uploaded" style="color:#94a3b8;background:#f8fafc;border-color:var(--border);margin-top:14px;">No fulfillment document was uploaded.</div>`;
+    }
+    document.getElementById('psDocArea').innerHTML=s4Html;
   } else { psSec.style.display='none'; }
 
   // FIX: Role-based action buttons
@@ -1526,16 +1657,78 @@ async function actionReopen(id){
   refreshCounts();
 }
 
-function handleProofUpload(input,type){
-  if(!input.files||!input.files[0]) return;
-  const fname=input.files[0].name;
-  if(type==='stage2proof' && curDetailId!==null){
+async function handleProofUpload(input,type){
+  if(!input.files||!input.files[0]||curDetailId===null) return;
+  const file=input.files[0];
+  const stage=type==='stage2proof'?2:4;
+  const fd=new FormData();
+  fd.append('file',file);
+  fd.append('stage',stage);
+  showToast('📤 Uploading '+file.name+'…','info');
+  try{
+    const res=await fetch(API+'/tasks/'+curDetailId+'/proof',{
+      method:'POST',
+      headers:{Authorization:'Bearer '+authToken},
+      body:fd
+    });
+    const data=await res.json();
+    if(!data.success){showToast('❌ Upload failed: '+data.error,'error');return;}
+    showToast('✅ '+file.name+' uploaded successfully','success');
+    // Update local flags
     const t=TASKS.find(x=>x.id===curDetailId);
-    if(t){ t.proofUploaded=true; showToast(`📎 Proof uploaded: ${fname}`,'success'); renderDetail(t); }
-  } else if(type==='stage4doc' && curDetailId!==null){
-    const t=TASKS.find(x=>x.id===curDetailId);
-    if(t){ t.s4docUploaded=true; showToast(`📎 Fulfillment doc uploaded: ${fname}`,'success'); renderDetail(t); }
+    if(t){
+      if(stage===2) t.proofUploaded=true;
+      else t.s4docUploaded=true;
+      // Refresh full detail to get updated proofs list
+      const detail=await apiCall('GET','/tasks/'+curDetailId);
+      if(detail.success){
+        t.proofs=detail.task.proofs||[];
+        t.subtasks=detail.task.subtasks||[];
+      }
+      renderDetail(t);
+    }
+  } catch(err){
+    showToast('❌ Upload error: '+err.message,'error');
   }
+}
+
+// Open a proof file in a new tab — uses fetch+blob to carry the auth token
+async function viewProof(proofId){
+  showToast('📂 Loading file…','info');
+  try{
+    const res=await fetch(API+'/files/'+proofId,{
+      headers:{Authorization:'Bearer '+authToken}
+    });
+    if(!res.ok){showToast('❌ Could not load file','error');return;}
+    const blob=await res.blob();
+    const url=URL.createObjectURL(blob);
+    window.open(url,'_blank');
+  } catch(err){
+    showToast('❌ Error loading file: '+err.message,'error');
+  }
+}
+
+// Toggle a subtask complete/incomplete
+async function toggleSubtask(subtaskId, completed, taskId){
+  const data=await apiCall('PUT','/tasks/'+taskId+'/subtasks/'+subtaskId+'/complete',{completed});
+  if(!data.success){
+    showToast('❌ Could not update subtask','error');
+    // Revert checkbox
+    const cb=document.querySelector(`#st-${subtaskId} .st-check`);
+    if(cb) cb.checked=!completed;
+    return;
+  }
+  // Refresh task detail to reflect updated subtask state
+  const t=TASKS.find(x=>x.id===taskId);
+  if(t){
+    const detail=await apiCall('GET','/tasks/'+taskId);
+    if(detail.success){
+      t.proofs=detail.task.proofs||[];
+      t.subtasks=detail.task.subtasks||[];
+    }
+    renderDetail(t);
+  }
+  showToast(completed?'✅ Subtask marked complete':'↩ Subtask reopened','success');
 }
 
 // ═══════════════ SEND BACK MODAL ═══════════════
