@@ -318,6 +318,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--navy);min-
 
 /* TASK DETAIL */
 .det-sec{margin-bottom:20px;}
+.instructions-box{background:#fffbeb;border:1.5px solid #fde68a;border-left:4px solid #f59e0b;border-radius:var(--r-sm);padding:12px 16px;font-size:13.5px;color:#1e293b;line-height:1.7;white-space:pre-wrap;}
 .det-sec h4{font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid var(--border);}
 .det-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;}
 .di{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 13px;}
@@ -361,23 +362,79 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--navy);min-
 .proof-file-meta{font-size:11px;color:#94a3b8;margin-top:2px;}
 .btn-view{background:#eff6ff;color:var(--blue);border:1.5px solid #bfdbfe;padding:7px 13px;border-radius:var(--r-sm);font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s;white-space:nowrap;flex-shrink:0;}
 .btn-view:hover{background:#dbeafe;border-color:var(--blue);}
+.btn-del-proof{background:rgba(239,68,68,0.07);color:#ef4444;border:1.5px solid rgba(239,68,68,0.25);padding:5px 10px;border-radius:var(--r-sm);font-size:11px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s;white-space:nowrap;flex-shrink:0;}
+.btn-del-proof:hover{background:rgba(239,68,68,0.15);}
+.restored-files-section{margin-top:14px;border-top:1px dashed #fbbf24;padding-top:12px;}
+.restored-files-label{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#d97706;margin-bottom:8px;}
+.restored-badge{display:inline-block;background:#fffbeb;border:1px solid #fde68a;color:#b45309;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;margin-left:6px;}
 
-/* SUBTASK ITEMS — detail view */
-.subtasks-progress{margin-bottom:12px;}
+/* TASK MANAGEMENT BAR (transfer / suspend / cancel) */
+.mgmt-bar{display:flex;gap:8px;flex-wrap:wrap;padding:10px 0 6px;border-bottom:1px solid #f1f5f9;margin-bottom:10px;}
+.btn-mgmt{padding:6px 13px;border-radius:var(--r-sm);font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;border:1.5px solid;transition:all .2s;}
+.btn-transfer{background:#eff6ff;color:#2563eb;border-color:#bfdbfe;}.btn-transfer:hover{background:#dbeafe;}
+.btn-suspend{background:#fffbeb;color:#d97706;border-color:#fde68a;}.btn-suspend:hover{background:#fef3c7;}
+.btn-resume{background:#ecfdf5;color:#059669;border-color:#a7f3d0;}.btn-resume:hover{background:#d1fae5;}
+.btn-cancel{background:rgba(239,68,68,0.08);color:#ef4444;border-color:rgba(239,68,68,0.3);}.btn-cancel:hover{background:rgba(239,68,68,0.15);}
+
+/* REASON MODAL (suspend / cancel / transfer) */
+.reason-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:3000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.reason-modal-overlay.active{opacity:1;pointer-events:all;}
+.reason-modal{background:#fff;border-radius:var(--r);padding:24px;width:440px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.reason-modal h3{margin:0 0 6px;font-size:16px;color:var(--navy);}
+.reason-modal p{margin:0 0 14px;font-size:12.5px;color:#64748b;}
+.reason-modal textarea{width:100%;border:1.5px solid #e2e8f0;border-radius:var(--r-sm);padding:10px;font-size:13px;font-family:'Nunito',sans-serif;resize:vertical;min-height:80px;box-sizing:border-box;}
+.reason-modal textarea:focus{outline:none;border-color:var(--blue);}
+.reason-modal .rm-foot{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;}
+.reason-modal select{width:100%;border:1.5px solid #e2e8f0;border-radius:var(--r-sm);padding:9px 10px;font-size:13px;font-family:'Nunito',sans-serif;margin-bottom:10px;}
+
+/* SUGGEST A CHANGE — floating button + modal */
+.suggest-fab{position:fixed;bottom:24px;right:24px;z-index:2000;background:var(--teal);color:#fff;border:none;border-radius:50px;padding:11px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:0 4px 16px rgba(20,184,166,.4);display:flex;align-items:center;gap:8px;transition:all .2s;}
+.suggest-fab:hover{background:#0d9488;transform:translateY(-2px);box-shadow:0 6px 20px rgba(20,184,166,.5);}
+.sug-cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.sug-cat-opt{border:1.5px solid #e2e8f0;border-radius:var(--r-sm);padding:10px 12px;cursor:pointer;text-align:center;font-size:12.5px;font-weight:700;color:#475569;transition:all .2s;}
+.sug-cat-opt:hover,.sug-cat-opt.sel{border-color:var(--teal);background:#f0fdfa;color:var(--teal);}
+.sug-pri-row{display:flex;gap:8px;margin-bottom:12px;}
+.sug-pri-btn{flex:1;border:1.5px solid #e2e8f0;border-radius:var(--r-sm);padding:7px;cursor:pointer;text-align:center;font-size:12px;font-weight:700;color:#64748b;transition:all .2s;}
+.sug-pri-btn:hover,.sug-pri-btn.sel{border-color:var(--blue);background:#eff6ff;color:var(--blue);}
+.sug-pri-btn.sel.crit{border-color:#ef4444;background:rgba(239,68,68,.08);color:#ef4444;}
+.sug-pri-btn.sel.imp{border-color:#f59e0b;background:#fffbeb;color:#d97706;}
+
+/* SUBTASK WORK CARDS — D1 redesign */
+.subtasks-progress{margin-bottom:14px;}
 .subtasks-prog-text{font-size:11px;font-weight:700;color:#64748b;margin-bottom:5px;}
-.subtasks-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+.subtasks-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
 .subtasks-fill{height:100%;background:var(--teal);border-radius:3px;transition:width .3s;}
-.subtask-item{display:flex;flex-direction:column;gap:4px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:8px;transition:background .2s;}
-.subtask-item.st-done{background:#ecfdf5;border-color:#a7f3d0;}
-.st-check-wrap{display:flex;align-items:flex-start;gap:9px;}
-.st-check{width:16px;height:16px;accent-color:var(--teal);cursor:pointer;flex-shrink:0;margin-top:1px;}
-.st-check:disabled{cursor:not-allowed;opacity:.5;}
-.st-title{font-size:13px;font-weight:700;color:var(--navy);line-height:1.4;}
-.st-done .st-title{text-decoration:line-through;color:#94a3b8;}
-.st-instructions{font-size:11px;color:#64748b;padding-left:25px;margin-top:3px;line-height:1.4;}
-.st-meta{display:flex;gap:14px;flex-wrap:wrap;padding-left:25px;margin-top:5px;}
-.st-meta span{font-size:11px;color:#94a3b8;font-weight:600;}
-.st-done-by{color:var(--green)!important;}
+/* Work card */
+.st-card{border:1.5px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;background:#fff;transition:border-color .2s;}
+.st-card.st-done{background:#f0fdf9;border-color:#a7f3d0;}
+.st-card.st-done .st-card-title{color:#94a3b8;text-decoration:line-through;}
+.st-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px;}
+.st-card-num{background:var(--navy);color:#fff;font-size:10px;font-weight:800;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.st-card.st-done .st-card-num{background:var(--teal);}
+.st-card-title{font-size:14px;font-weight:800;color:var(--navy);line-height:1.4;flex:1;}
+.st-card-badge{font-size:10px;font-weight:800;padding:3px 9px;border-radius:30px;white-space:nowrap;flex-shrink:0;}
+.st-badge-pending{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;}
+.st-badge-done{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;}
+.st-card-instr{font-size:12.5px;color:#475569;background:#f8fafc;border-left:3px solid var(--teal);padding:8px 12px;border-radius:0 var(--r-sm) var(--r-sm) 0;margin-bottom:10px;line-height:1.6;}
+.st-card-meta{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;}
+.st-card-meta span{font-size:11.5px;color:#64748b;font-weight:600;}
+/* Subtask proof area */
+.st-proof-area{border-top:1px solid var(--border);padding-top:12px;}
+.st-proof-label{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#64748b;margin-bottom:8px;}
+.st-proof-list{margin-bottom:8px;}
+.st-proof-row{display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--surface2);border-radius:var(--r-sm);margin-bottom:5px;}
+.st-proof-row .pf-name{flex:1;font-size:12px;font-weight:700;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.st-proof-row .pf-meta{font-size:10.5px;color:#94a3b8;}
+.st-proof-count{font-size:11px;color:#64748b;margin-bottom:6px;}
+.st-proof-count span{font-weight:800;color:var(--navy);}
+.st-upload-box{border:1.5px dashed #cbd5e1;border-radius:var(--r-sm);padding:10px 14px;text-align:center;font-size:12px;color:#64748b;cursor:pointer;position:relative;transition:all .2s;}
+.st-upload-box:hover{border-color:var(--teal);color:var(--teal);background:#f0fdfa;}
+.st-upload-box input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.st-done-meta{font-size:11.5px;color:var(--teal);font-weight:700;margin-top:4px;}
+.btn-st-done{background:var(--teal);color:#fff;border:none;border-radius:var(--r-sm);padding:8px 18px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;margin-top:8px;transition:all .2s;}
+.btn-st-done:hover{background:#0d9488;}
+.btn-st-undone{background:#fff;color:#64748b;border:1.5px solid #cbd5e1;border-radius:var(--r-sm);padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s;}
+.btn-st-undone:hover{border-color:#ef4444;color:#ef4444;}
 
 /* NOTES */
 .note{padding:10px 13px;border-radius:var(--r-sm);font-size:12px;font-weight:600;display:flex;align-items:flex-start;gap:8px;margin-top:10px;}
@@ -626,8 +683,14 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--navy);min-
             </div>
             <div class="fg" id="sipMonthWrap"><label>Date of Month <span class="req">*</span></label>
               <select id="sipMonthDate">
-                <option>1st</option><option>5th</option><option>7th</option><option>10th</option>
-                <option>15th</option><option>20th</option><option>25th</option><option>28th</option>
+                <option>1st</option><option>2nd</option><option>3rd</option><option>4th</option>
+                <option>5th</option><option>6th</option><option>7th</option><option>8th</option>
+                <option>9th</option><option>10th</option><option>11th</option><option>12th</option>
+                <option>13th</option><option>14th</option><option>15th</option><option>16th</option>
+                <option>17th</option><option>18th</option><option>19th</option><option>20th</option>
+                <option>21st</option><option>22nd</option><option>23rd</option><option>24th</option>
+                <option>25th</option><option>26th</option><option>27th</option><option>28th</option>
+                <option>29th</option><option>30th</option><option>31st</option>
               </select>
             </div>
             <div class="fg" id="sipWeekWrap" style="display:none"><label>Day of Week <span class="req">*</span></label>
@@ -802,6 +865,11 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--navy);min-
           <div class="di"><div class="di-l">Created By</div><div class="di-v" id="d-created">—</div></div>
         </div>
       </div>
+      <!-- Manager's Instructions (D13) — shown when description exists -->
+      <div class="det-sec" id="instructionsSection" style="display:none">
+        <h4>Manager's Instructions</h4>
+        <div class="instructions-box" id="instructionsBody"></div>
+      </div>
       <!-- Stage 3 Confirmation Record (shown only after stage 3) -->
       <div class="det-sec" id="s3RecordSection" style="display:none">
         <h4>Stage 3 — Confirmation Record</h4>
@@ -856,6 +924,103 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--navy);min-
     </div>
   </div>
 </div>
+
+<!-- DELETE PROOF REASON MODAL (manager) -->
+<div class="reason-modal-overlay" id="delProofOverlay">
+  <div class="reason-modal">
+    <h3>🗑 Delete Proof File</h3>
+    <p>As a manager, you must provide a reason. If this task is completed, it will revert to In Progress and the staff member will be notified.</p>
+    <textarea id="delProofReason" placeholder="Reason for deletion (required)..." rows="3"></textarea>
+    <div class="rm-foot">
+      <button class="btn btn-ghost" onclick="closeReasonModal('delProofOverlay')">Cancel</button>
+      <button class="btn btn-mgmt btn-cancel" style="font-size:13px;padding:8px 16px;" onclick="confirmDeleteProof(document.getElementById('delProofReason').value.trim())">🗑 Delete File</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRANSFER TASK MODAL -->
+<div class="reason-modal-overlay" id="transferOverlay">
+  <div class="reason-modal">
+    <h3>↔ Transfer Task</h3>
+    <p>Choose a new team member to take over this task.</p>
+    <select id="transferAssignee"><option value="">— Select new assignee —</option></select>
+    <textarea id="transferNote" placeholder="Optional note (reason for transfer)..." rows="3"></textarea>
+    <div class="rm-foot">
+      <button class="btn btn-ghost" onclick="closeReasonModal('transferOverlay')">Cancel</button>
+      <button class="btn btn-navy" onclick="confirmTransfer()">↔ Transfer</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUSPEND TASK MODAL -->
+<div class="reason-modal-overlay" id="suspendOverlay">
+  <div class="reason-modal">
+    <h3>⏸ Suspend Task</h3>
+    <p>Task will be put on hold. Staff will be notified. You can resume it anytime.</p>
+    <textarea id="suspendReason" placeholder="Reason for suspension (required)..." rows="3"></textarea>
+    <div class="rm-foot">
+      <button class="btn btn-ghost" onclick="closeReasonModal('suspendOverlay')">Cancel</button>
+      <button class="btn btn-mgmt btn-suspend" style="font-size:13px;padding:8px 16px;" onclick="confirmSuspend()">⏸ Suspend</button>
+    </div>
+  </div>
+</div>
+
+<!-- CANCEL TASK MODAL -->
+<div class="reason-modal-overlay" id="cancelOverlay">
+  <div class="reason-modal">
+    <h3>🚫 Cancel Task</h3>
+    <p>This task will be permanently cancelled and hidden from all staff. This cannot be undone.</p>
+    <textarea id="cancelReason" placeholder="Reason for cancellation (required)..." rows="3"></textarea>
+    <div class="rm-foot">
+      <button class="btn btn-ghost" onclick="closeReasonModal('cancelOverlay')">Cancel</button>
+      <button class="btn btn-mgmt btn-cancel" style="font-size:13px;padding:8px 16px;" onclick="confirmCancel()">🚫 Cancel Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- REQUEST SUSPENSION MODAL (staff) -->
+<div class="reason-modal-overlay" id="reqSuspendOverlay">
+  <div class="reason-modal">
+    <h3>🚩 Request Suspension</h3>
+    <p>Your manager/admin will be notified. They will decide whether to suspend this task.</p>
+    <textarea id="reqSuspendReason" placeholder="Why do you need this task suspended? (required)..." rows="3"></textarea>
+    <div class="rm-foot">
+      <button class="btn btn-ghost" onclick="closeReasonModal('reqSuspendOverlay')">Cancel</button>
+      <button class="btn btn-ghost" style="border-color:#f59e0b;color:#d97706;" onclick="confirmRequestSuspend()">🚩 Send Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUGGEST A CHANGE MODAL -->
+<div class="reason-modal-overlay" id="suggestOverlay">
+  <div class="reason-modal" style="width:500px;">
+    <h3>💡 Suggest a Change or Feature</h3>
+    <p>Your feedback directly reaches the Admin. Tell us what's wrong or what would help.</p>
+    <div class="sug-cat-grid" id="sugCatGrid">
+      <div class="sug-cat-opt sel" data-val="bug_report" onclick="setSugCat(this)">🐛 Bug Report</div>
+      <div class="sug-cat-opt" data-val="feature_request" onclick="setSugCat(this)">✨ Feature Request</div>
+      <div class="sug-cat-opt" data-val="ui_improvement" onclick="setSugCat(this)">🎨 UI Improvement</div>
+      <div class="sug-cat-opt" data-val="other" onclick="setSugCat(this)">💬 Other</div>
+    </div>
+    <input id="sugTitle" type="text" placeholder="Short title / summary *" style="width:100%;border:1.5px solid #e2e8f0;border-radius:var(--r-sm);padding:9px 10px;font-size:13px;font-family:'Nunito',sans-serif;margin-bottom:10px;box-sizing:border-box;">
+    <textarea id="sugDesc" placeholder="Describe in detail what you need or what's wrong... *" rows="4" style="width:100%;border:1.5px solid #e2e8f0;border-radius:var(--r-sm);padding:10px;font-size:13px;font-family:'Nunito',sans-serif;resize:vertical;box-sizing:border-box;"></textarea>
+    <div style="font-size:11.5px;color:#64748b;margin:8px 0 5px;font-weight:700;">PRIORITY</div>
+    <div class="sug-pri-row">
+      <div class="sug-pri-btn sel" data-val="normal" onclick="setSugPri(this)">Normal</div>
+      <div class="sug-pri-btn imp" data-val="important" onclick="setSugPri(this)">⚠️ Important</div>
+      <div class="sug-pri-btn crit" data-val="critical" onclick="setSugPri(this)">🔴 Critical</div>
+    </div>
+    <div class="rm-foot">
+      <button class="btn btn-ghost" onclick="closeReasonModal('suggestOverlay')">Cancel</button>
+      <button class="btn btn-teal" onclick="submitSuggestion()">💡 Submit Suggestion</button>
+    </div>
+  </div>
+</div>
+
+<!-- FLOATING SUGGEST BUTTON -->
+<button class="suggest-fab" onclick="openSuggestModal()" id="suggestFab" style="display:none">
+  💡 Suggest a Change
+</button>
 
 <div class="toast" id="toast"></div>
 
@@ -1074,6 +1239,7 @@ async function doLogin(){
 
   document.getElementById('loginPage').style.display='none';
   document.getElementById('appShell').style.display='block';
+  document.getElementById('suggestFab').style.display='flex';
 
   // Load real data from backend
   await loadDashboard();
@@ -1107,9 +1273,10 @@ async function loadDashboard(){
     });
   }
 
-  // BUG #4 FIX: Load ALL tasks from all statuses into TASKS array
-  // This ensures MIS and status panels always show fresh data from DB
-  const allStatuses = ['pending','inprogress','postsales','done'];
+  // Load tasks for all statuses; admins also load suspended + cancelled
+  const baseStatuses = ['pending','inprogress','postsales','done'];
+  const isAdminUser  = currentUser.role === 'Admin / Partner';
+  const allStatuses  = isAdminUser ? [...baseStatuses,'suspended','cancelled'] : baseStatuses;
   const allTasksLoaded = await Promise.all(allStatuses.map(s => loadTasksByStatus(s)));
   TASKS = allTasksLoaded.flat();
 
@@ -1121,6 +1288,7 @@ async function loadStaff(){
   const data = await apiCall('GET', '/staff');
   if(data.success){
     USERS = data.staff.map(u => ({
+      id:   u.id,
       name: u.full_name,
       role: u.role,
       active: u.tasks_active || 0,
@@ -1159,8 +1327,10 @@ async function loadTasksByStatus(status){
     proof:      t.proof_required,
     proofUploaded:  t.proof_uploaded,
     s4docUploaded:  t.s4_doc_uploaded,
-    psTemplate: t.ps_template,
-    s3record:   t.s3_confirmed_at ? {
+    psTemplate:    t.ps_template,
+    suspendReason: t.suspend_reason || null,
+    cancelReason:  t.cancel_reason  || null,
+    s3record:      t.s3_confirmed_at ? {
       by:   t.s3_confirmed_by_name,
       at:   t.s3_confirmed_at,
       note: t.s3_note
@@ -1171,6 +1341,7 @@ async function loadTasksByStatus(status){
 function doLogout(){
   document.getElementById('appShell').style.display='none';
   document.getElementById('loginPage').style.display='flex';
+  document.getElementById('suggestFab').style.display='none';
   // FIX: clear login form on logout
   document.getElementById('loginUser').value='';
   document.getElementById('loginPassword').value='';
@@ -1394,10 +1565,13 @@ async function openDetail(id){
     const detail = await apiCall('GET', '/tasks/'+id);
     if(detail.success){
       // Enrich the in-memory task with full detail data
-      t.proofs    = detail.task.proofs    || [];
-      t.subtasks  = detail.task.subtasks  || [];
-      t.email     = t.email  || detail.task.client_email;
-      t.father    = t.father || detail.task.client_father;
+      t.proofs         = detail.task.proofs    || [];
+      t.subtasks       = detail.task.subtasks  || [];
+      t.email          = t.email  || detail.task.client_email;
+      t.father         = t.father || detail.task.client_father;
+      t.suspendReason  = detail.task.suspend_reason || null;
+      t.cancelReason   = detail.task.cancel_reason  || null;
+      t.description    = detail.task.description    || null;
       renderDetail(t); // re-render with enriched data
     }
   } catch(e){ /* non-fatal — basic info already showing */ }
@@ -1430,6 +1604,13 @@ function renderDetail(t){
       <div class="stg-label">${s}</div>
     </div>`).join('');
 
+  // D13 — Manager's Instructions
+  const instrSec=document.getElementById('instructionsSection');
+  if(t.description && t.description.trim()){
+    instrSec.style.display='block';
+    document.getElementById('instructionsBody').textContent=t.description.trim();
+  } else { instrSec.style.display='none'; }
+
   // Stage 3 confirmation record
   const s3sec=document.getElementById('s3RecordSection');
   if(t.s3record && t.stage>=4){
@@ -1437,75 +1618,92 @@ function renderDetail(t){
     document.getElementById('s3RecordBody').innerHTML=`Confirmed by <strong>${t.s3record.by}</strong> on ${t.s3record.at}<br>${t.s3record.note?`<em>"${t.s3record.note}"</em>`:''}`;
   } else { s3sec.style.display='none'; }
 
-  // ── Subtasks section ──────────────────────────────────────
-  const subSec = document.getElementById('subtasksSection');
+  // ── D1–D4: Subtask work cards + conditional main proof ────
+  const subSec  = document.getElementById('subtasksSection');
+  const proofSec = document.getElementById('proofSection');
   const subtasks = t.subtasks || [];
-  if(subtasks.length > 0){
+  const hasSubtasks = subtasks.length > 0;
+  const isManagerRole = ['Admin / Partner','Operations Manager','Relationship Manager'].includes(currentUser.role);
+  const isTaskAssignee = t.assigned === currentUser.name;
+  const taskActive = !['done','cancelled','suspended'].includes(t.status);
+
+  if(hasSubtasks){
+    // D3: main task proof section hidden when subtasks exist
+    proofSec.style.display='none';
     subSec.style.display='block';
+
     const doneCount = subtasks.filter(s=>s.is_completed).length;
-    const pct = Math.round(doneCount/subtasks.length*100);
-    const isManager = ['Admin / Partner','Operations Manager','Relationship Manager'].includes(currentUser.role);
+    const pct = subtasks.length ? Math.round(doneCount/subtasks.length*100) : 0;
+
     let subHtml = `
       <div class="subtasks-progress">
-        <div class="subtasks-prog-text">${doneCount} of ${subtasks.length} completed</div>
+        <div class="subtasks-prog-text">${doneCount} of ${subtasks.length} work items completed</div>
         <div class="subtasks-bar"><div class="subtasks-fill" style="width:${pct}%"></div></div>
       </div>`;
-    subtasks.forEach(st=>{
-      const canToggle = (isManager || currentUser.id === st.assigned_to) && t.status !== 'done';
-      const dueTxt = st.due_date ? st.due_date.slice(0,10) : '';
+
+    subtasks.forEach((st, idx) => {
+      const isStAssignee  = currentUser.id === st.assigned_to;
+      // D1: who can act on this subtask
+      const canAct = taskActive && (isManagerRole || isStAssignee || (isTaskAssignee && !st.assigned_to));
+      const proofs  = st.proofs || [];
+      const dueTxt  = st.due_date ? st.due_date.slice(0,10) : '';
+
+      // Proof rows html
+      let proofRowsHtml = '';
+      proofs.forEach(p=>{
+        const kb = p.file_size ? (p.file_size>1048576?(p.file_size/1048576).toFixed(1)+' MB':Math.round(p.file_size/1024)+' KB') : '';
+        proofRowsHtml += `
+          <div class="st-proof-row">
+            <span>📎</span>
+            <span class="pf-name">${p.original_file_name||p.file_name}</span>
+            <span class="pf-meta">${kb}</span>
+            <button class="btn-view" style="padding:4px 10px;font-size:11px;" onclick="viewSubtaskProof(${p.id})">👁 View</button>
+          </div>`;
+      });
+
+      // Upload box (D2: only show if under 3 files and canAct and not done)
+      const canUpload = canAct && !st.is_completed && proofs.length < 3;
+      const uploadHtml = canUpload
+        ? `<div class="st-upload-box">📎 Upload proof for this step (${proofs.length}/3 uploaded)<input type="file" onchange="handleSubtaskProofUpload(this,${st.id},${t.id})"></div>`
+        : (proofs.length >= 3 ? `<div style="font-size:11px;color:var(--teal);font-weight:700;">✅ Maximum 3 files uploaded</div>` : '');
+
+      // Mark done / reopen button
+      let actionHtml = '';
+      if(canAct && !st.is_completed){
+        actionHtml = `<button class="btn-st-done" onclick="toggleSubtask(${st.id},true,${t.id})">✅ Mark as Done</button>`;
+      } else if(canAct && st.is_completed && isManagerRole){
+        actionHtml = `<button class="btn-st-undone" onclick="toggleSubtask(${st.id},false,${t.id})">↩ Reopen</button>`;
+      }
+
       subHtml += `
-        <div class="subtask-item ${st.is_completed?'st-done':''}" id="st-${st.id}">
-          <label class="st-check-wrap">
-            <input type="checkbox" class="st-check" ${st.is_completed?'checked':''}
-              ${canToggle?'':'disabled'}
-              onchange="toggleSubtask(${st.id},this.checked,${t.id})">
-            <span class="st-title">${st.title}</span>
-          </label>
-          ${st.instructions?`<div class="st-instructions">${st.instructions}</div>`:''}
-          <div class="st-meta">
-            ${st.assigned_to_name?`<span>👤 ${st.assigned_to_name}</span>`:''}
-            ${dueTxt?`<span>📅 ${dueTxt}</span>`:''}
-            ${st.is_completed?`<span class="st-done-by">✅ Done by ${st.completed_by_name||'—'}</span>`:''}
+        <div class="st-card ${st.is_completed?'st-done':''}" id="st-${st.id}">
+          <div class="st-card-header">
+            <div class="st-card-num">${idx+1}</div>
+            <div class="st-card-title">${st.title}</div>
+            <span class="st-card-badge ${st.is_completed?'st-badge-done':'st-badge-pending'}">${st.is_completed?'✅ Done':'⏳ Pending'}</span>
+          </div>
+          ${st.instructions?`<div class="st-card-instr">${st.instructions}</div>`:''}
+          <div class="st-card-meta">
+            ${st.assigned_to_name?`<span>👤 Assigned to: ${st.assigned_to_name}</span>`:`<span>👤 Assigned to: ${t.assigned} (task assignee)</span>`}
+            ${dueTxt?`<span>📅 Due: ${dueTxt}</span>`:''}
+            ${st.is_completed?`<span style="color:var(--teal);">✅ Completed by ${st.completed_by_name||'—'}</span>`:''}
+          </div>
+          <div class="st-proof-area">
+            <div class="st-proof-label">Proof Files (${proofs.length}/3)</div>
+            ${proofRowsHtml?`<div class="st-proof-list">${proofRowsHtml}</div>`:''}
+            ${uploadHtml}
+            ${actionHtml}
           </div>
         </div>`;
     });
     document.getElementById('subtasksContent').innerHTML = subHtml;
-  } else {
-    subSec.style.display='none';
-  }
 
-  // ── Proof section (Stage 2) ───────────────────────────────
-  const proofSec=document.getElementById('proofContent');
-  const proofs2=(t.proofs||[]).filter(p=>p.stage===2);
-  let proofHtml='';
-  // Fallback: proofs not yet fetched but flag says something was uploaded
-  if(proofs2.length===0 && t.proofUploaded && t.proofs===undefined){
-    proofHtml+=`<div class="proof-uploaded">✅ Proof uploaded — open task to view file</div>`;
+  } else {
+    // D4: no subtasks — keep standard main task proof section
+    subSec.style.display='none';
+    proofSec.style.display='block';
+    document.getElementById('proofContent').innerHTML = buildProofListHtml(t, (t.proofs||[]).filter(p=>p.stage===2 && !p.is_restored), 'stage2proof', taskActive, isManagerRole, isTaskAssignee);
   }
-  if(proofs2.length>0){
-    proofHtml+='<div class="proof-files-list">';
-    proofs2.forEach(p=>{
-      const dt = p.uploaded_at ? new Date(p.uploaded_at).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) : '';
-      const kb = p.file_size ? (p.file_size>1048576?(p.file_size/1048576).toFixed(1)+' MB':Math.round(p.file_size/1024)+' KB') : '';
-      proofHtml+=`
-        <div class="proof-file-row">
-          <div class="proof-file-icon">📎</div>
-          <div class="proof-file-info">
-            <div class="proof-file-name">${p.original_file_name||p.file_name}</div>
-            <div class="proof-file-meta">By ${p.uploaded_by_name} · ${dt}${kb?' · '+kb:''}</div>
-          </div>
-          <button class="btn-view" onclick="viewProof(${p.id})">👁 View</button>
-        </div>`;
-    });
-    proofHtml+='</div>';
-  }
-  // Show upload box unless task is fully done
-  if(t.status!=='done'){
-    proofHtml+=`<div class="proof-box" style="margin-top:${proofs2.length>0?'8px':'0'}">📎 Upload proof — payment screenshot, submission confirmation, reference number<input type="file" onchange="handleProofUpload(this,'stage2proof')"></div>`;
-  } else if(proofs2.length===0){
-    proofHtml+=`<div class="proof-uploaded" style="color:#94a3b8;background:#f8fafc;border-color:var(--border);">No proof was uploaded for this task.</div>`;
-  }
-  proofSec.innerHTML=proofHtml;
 
   // Post-sales section
   const psSec=document.getElementById('psSection');
@@ -1515,85 +1713,185 @@ function renderDetail(t){
     const ptitles={mf_purchase:'Mutual Fund Purchase — Fulfillment',mf_redemption:'Mutual Fund Redemption — Fulfillment',pms:'PMS — Account Details',aif:'AIF — Account Setup',insurance:'Insurance — Policy Details',fd:'Fixed Deposit — Confirmation',bank:'Banking — Account Details',tax:'Tax Filing — Acknowledgment',egold:'eGold/eSilver — Order Details',ca_work:'CA Work — Filing Confirmation',broking:'Broking — Account Details'};
     document.getElementById('psTitle').textContent=ptitles[t.psTemplate]||'Fulfillment Details';
     document.getElementById('psFields').innerHTML=tmpl||'<p style="font-size:12px;color:#64748b">No specific template.</p>';
-    // Stage 4 proof files — same rich display as Stage 2
-    const proofs4=(t.proofs||[]).filter(p=>p.stage===4);
-    let s4Html='';
-    if(proofs4.length>0){
-      s4Html+='<div class="proof-files-list" style="margin-top:14px;">';
-      proofs4.forEach(p=>{
-        const dt=p.uploaded_at?new Date(p.uploaded_at).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}):'';
-        const kb=p.file_size?(p.file_size>1048576?(p.file_size/1048576).toFixed(1)+' MB':Math.round(p.file_size/1024)+' KB'):'';
-        s4Html+=`
-          <div class="proof-file-row">
-            <div class="proof-file-icon">📄</div>
-            <div class="proof-file-info">
-              <div class="proof-file-name">${p.original_file_name||p.file_name}</div>
-              <div class="proof-file-meta">By ${p.uploaded_by_name} · ${dt}${kb?' · '+kb:''}</div>
-            </div>
-            <button class="btn-view" onclick="viewProof(${p.id})">👁 View</button>
-          </div>`;
-      });
-      s4Html+='</div>';
-    }
-    // Show upload box unless task is done
-    if(t.status!=='done'){
-      s4Html+=`<div class="proof-box" style="margin-top:${proofs4.length>0?'8px':'14px'}">📎 Upload fulfillment document — Policy, Folio statement, NAV confirmation, etc.<input type="file" onchange="handleProofUpload(this,'stage4doc')"></div>`;
-    } else if(proofs4.length===0){
-      s4Html+=`<div class="proof-uploaded" style="color:#94a3b8;background:#f8fafc;border-color:var(--border);margin-top:14px;">No fulfillment document was uploaded.</div>`;
-    }
-    document.getElementById('psDocArea').innerHTML=s4Html;
+    // Stage 4 proof files — with delete + restored files support
+    const s4Active = t.status === 'postsales';
+    document.getElementById('psDocArea').innerHTML =
+      '<div style="margin-top:14px;">' +
+      buildProofListHtml(t, (t.proofs||[]).filter(p=>p.stage===4 && !p.is_restored), 'stage4doc', s4Active, isManagerRole, isTaskAssignee) +
+      buildRestoredFilesHtml(t, 4) +
+      '</div>';
   } else { psSec.style.display='none'; }
 
-  // FIX: Role-based action buttons
-  // Managers/Admins see confirm/verify buttons
-  // Staff see only their own task actions (mark done, upload proof)
+  // Role-based action buttons
   const actRow=document.getElementById('actRow');
-  const isManager = ['Admin / Partner','Operations Manager','Relationship Manager'].includes(currentUser.role);
+  const isAdmin    = currentUser.role === 'Admin / Partner';
+  const isManager  = ['Admin / Partner','Operations Manager','Relationship Manager'].includes(currentUser.role);
   const isAssignee = t.assigned === currentUser.name;
 
-  if(t.status==='pending'){
-    if(isManager){
-      actRow.innerHTML=`
+  // Admin-only management bar (transfer / suspend / cancel) — shown on all active tasks
+  let mgmtBar = '';
+  if(isAdmin && !['done','cancelled'].includes(t.status)){
+    mgmtBar = `<div class="mgmt-bar">
+      <button class="btn-mgmt btn-transfer" onclick="openTransferModal(${t.id})">↔ Transfer</button>
+      ${t.status==='suspended'
+        ? `<button class="btn-mgmt btn-resume" onclick="actionResume(${t.id})">▶ Resume</button>`
+        : `<button class="btn-mgmt btn-suspend" onclick="openSuspendModal(${t.id})">⏸ Suspend</button>`}
+      <button class="btn-mgmt btn-cancel" onclick="openCancelModal(${t.id})">🚫 Cancel</button>
+    </div>`;
+  } else if(isManager && !isAdmin && !['done','cancelled','suspended'].includes(t.status)){
+    // Non-admin managers can transfer
+    mgmtBar = `<div class="mgmt-bar">
+      <button class="btn-mgmt btn-transfer" onclick="openTransferModal(${t.id})">↔ Transfer Task</button>
+    </div>`;
+  }
+
+  if(t.status==='suspended'){
+    actRow.innerHTML = mgmtBar + `<div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px 14px;font-size:13px;color:#fcd34d;">
+      ⏸ Task is suspended${t.suspendReason ? ': <em>'+t.suspendReason+'</em>' : ''}. ${isAdmin?'Use ▶ Resume above to reactivate.':'Contact your Admin to resume.'}
+    </div>`;
+  } else if(t.status==='cancelled'){
+    actRow.innerHTML = `<div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 14px;font-size:13px;color:#fca5a5;">
+      🚫 Task cancelled${t.cancelReason ? ': <em>'+t.cancelReason+'</em>' : ''}
+    </div>`;
+  } else if(t.status==='pending'){
+    if(isAssignee){
+      actRow.innerHTML = mgmtBar + `<button class="btn btn-navy" onclick="actionConfirmStage2(${t.id})">🚀 Accept & Start Task</button>`;
+    } else if(isManager){
+      actRow.innerHTML = mgmtBar + `
         <button class="btn btn-navy" onclick="actionConfirmStage2(${t.id})">✅ Mark as In Progress</button>
         <button class="btn btn-ghost" onclick="showToast('🔔 Reminder sent to ${t.assigned}!')">🔔 Send Reminder</button>`;
     } else {
-      actRow.innerHTML=`<p style="font-size:13px;color:#64748b">Awaiting manager to start this task.</p>`;
+      // Staff who are not assignee — can request suspension
+      actRow.innerHTML = `<p style="font-size:13px;color:#64748b">⏳ Awaiting ${t.assigned} to accept this task.</p>`;
     }
   } else if(t.status==='inprogress'){
     if(isManager){
-      actRow.innerHTML=`
+      actRow.innerHTML = mgmtBar + `
         <button class="btn btn-teal" onclick="actionConfirmStage3(${t.id})">✅ Confirm & ${t.txtype==='Financial Transaction'?'Create Post-Sales Task':'Mark Complete'}</button>
         <button class="btn btn-red" onclick="openSendback(${t.id})">↩ Send Back</button>
         <button class="btn btn-ghost" onclick="showToast('🔔 Nudge sent to ${t.assigned}!')">🔔 Nudge</button>`;
     } else if(isAssignee){
-      actRow.innerHTML=`
-        <button class="btn btn-navy" onclick="showToast('📎 Upload your proof above, then notify your manager.')">📤 Submit for Review</button>`;
+      actRow.innerHTML = `<p style="font-size:13px;color:#10b981;">📎 Upload your proof document above, then your manager will review and confirm.</p>
+        <button class="btn btn-ghost" style="margin-top:8px;font-size:12px;" onclick="openRequestSuspendModal(${t.id})">🚩 Request Suspension</button>`;
     } else {
-      actRow.innerHTML=`<p style="font-size:13px;color:#64748b">Task is being worked on by ${t.assigned}.</p>`;
+      actRow.innerHTML = `<p style="font-size:13px;color:#64748b">⏳ Task is in progress with ${t.assigned}.</p>`;
     }
   } else if(t.status==='postsales'){
     if(isManager){
-      actRow.innerHTML=`
+      actRow.innerHTML = mgmtBar + `
         <button class="btn btn-teal" onclick="actionVerifyFulfillment(${t.id})">🏁 Verify Fulfillment & Close Task</button>
         <button class="btn btn-red" onclick="openSendback(${t.id})">↩ Send Back</button>
         <button class="btn btn-ghost" onclick="showToast('🔔 Nudge sent to ${t.assigned}!')">🔔 Nudge</button>`;
     } else if(isAssignee){
-      actRow.innerHTML=`
-        <button class="btn btn-navy" onclick="showToast('📎 Fill the fulfillment details above and upload the document.')">📤 Submit Fulfillment</button>`;
+      actRow.innerHTML = `<p style="font-size:13px;color:#10b981;">📎 Fill fulfillment details above and upload the document.</p>
+        <button class="btn btn-ghost" style="margin-top:8px;font-size:12px;" onclick="openRequestSuspendModal(${t.id})">🚩 Request Suspension</button>`;
     } else {
-      actRow.innerHTML=`<p style="font-size:13px;color:#64748b">Awaiting fulfillment from ${t.assigned}.</p>`;
+      actRow.innerHTML = `<p style="font-size:13px;color:#64748b">Awaiting fulfillment from ${t.assigned}.</p>`;
     }
-  } else {
-    if(isManager){
-      actRow.innerHTML=`
-        <button class="btn btn-ghost" onclick="actionReopen(${t.id})">📋 Re-open Task</button>`;
+  } else if(t.status==='done'){
+    if(isAdmin){
+      actRow.innerHTML = `<button class="btn btn-ghost" onclick="actionReopen(${t.id})">📋 Re-open Task</button>`;
     } else {
-      actRow.innerHTML=`<p style="font-size:13px;color:#64748b;font-weight:600;">✅ This task is fully completed.</p>`;
+      actRow.innerHTML = `<p style="font-size:13px;color:#64748b;font-weight:600;">✅ This task is fully completed.</p>`;
     }
   }
 }
 
 function closeDetail(){document.getElementById('detailOverlay').classList.remove('active');curDetailId=null;}
+
+// ── D6–D12 Proof file helpers ─────────────────────────────
+
+// Build proof file list HTML with view + delete buttons
+function buildProofListHtml(t, proofs, uploadType, canUploadNow, isMgr, isAssignee){
+  let html = '';
+  const isStage4 = uploadType === 'stage4doc';
+  const uploadPrompt = isStage4
+    ? '📎 Upload fulfillment document — Policy, Folio statement, NAV confirmation, etc.'
+    : '📎 Upload proof — payment screenshot, submission confirmation, reference number';
+
+  if(proofs.length > 0){
+    html += '<div class="proof-files-list">';
+    proofs.forEach(p=>{
+      const dt = p.uploaded_at ? new Date(p.uploaded_at).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) : '';
+      const kb = p.file_size ? (p.file_size>1048576?(p.file_size/1048576).toFixed(1)+' MB':Math.round(p.file_size/1024)+' KB') : '';
+      // D6: staff can delete own file while task is inprogress; D8: manager can always delete
+      const staffCanDel = !isMgr && isAssignee && t.status==='inprogress' && p.uploaded_by===currentUser.id;
+      const showDel = isMgr || staffCanDel;
+      html += `
+        <div class="proof-file-row">
+          <div class="proof-file-icon">${isStage4?'📄':'📎'}</div>
+          <div class="proof-file-info">
+            <div class="proof-file-name">${p.original_file_name||p.file_name}</div>
+            <div class="proof-file-meta">By ${p.uploaded_by_name} · ${dt}${kb?' · '+kb:''}</div>
+          </div>
+          <button class="btn-view" onclick="viewProof(${p.id})">👁 View</button>
+          ${showDel ? `<button class="btn-del-proof" onclick="deleteProof(${p.id},${t.id},${isMgr})">🗑</button>` : ''}
+        </div>`;
+    });
+    html += '</div>';
+  }
+  if(canUploadNow){
+    html += `<div class="proof-box" style="margin-top:${proofs.length>0?'8px':'0'}">${uploadPrompt}<input type="file" onchange="handleProofUpload(this,'${uploadType}')"></div>`;
+  } else if(!canUploadNow && proofs.length===0){
+    html += `<div class="proof-uploaded" style="color:#94a3b8;background:#f8fafc;border-color:var(--border);">No ${isStage4?'fulfillment document':'proof'} was uploaded for this task.</div>`;
+  }
+  return html;
+}
+
+// D12: Restored files shown in a separate section
+function buildRestoredFilesHtml(t, stage){
+  const restored = (t.proofs||[]).filter(p=>p.stage===stage && p.is_restored);
+  if(!restored.length) return '';
+  let html = '<div class="restored-files-section"><div class="restored-files-label">♻️ Restored Files</div>';
+  restored.forEach(p=>{
+    const dt = p.uploaded_at ? new Date(p.uploaded_at).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}) : '';
+    const kb = p.file_size ? (p.file_size>1048576?(p.file_size/1048576).toFixed(1)+' MB':Math.round(p.file_size/1024)+' KB') : '';
+    html += `
+      <div class="proof-file-row">
+        <div class="proof-file-icon">♻️</div>
+        <div class="proof-file-info">
+          <div class="proof-file-name">${p.original_file_name||p.file_name}<span class="restored-badge">Restored</span></div>
+          <div class="proof-file-meta">Originally by ${p.uploaded_by_name} · ${dt}${kb?' · '+kb:''}</div>
+        </div>
+        <button class="btn-view" onclick="viewProof(${p.id})">👁 View</button>
+      </div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+// D6/D8: Delete a proof file
+let delProofId=null, delProofTaskId=null, delProofIsManager=false;
+function deleteProof(proofId, taskId, isManager){
+  delProofId=proofId; delProofTaskId=taskId; delProofIsManager=isManager;
+  if(isManager){
+    // Manager needs to give a reason — open modal
+    document.getElementById('delProofReason').value='';
+    document.getElementById('delProofOverlay').classList.add('active');
+  } else {
+    // Staff: just confirm (D6 — no reason needed)
+    if(confirm('Delete this file? You can re-upload the correct one.')) confirmDeleteProof(null);
+  }
+}
+async function confirmDeleteProof(reason){
+  const body = reason ? {reason} : {};
+  const data = await apiCall('DELETE', '/tasks/'+delProofTaskId+'/proof/'+delProofId, body);
+  if(!data.success){ showToast('❌ '+data.error,'error'); return; }
+  if(data.reverted){
+    showToast('🗑 File deleted. Task reverted to In Progress — staff notified.','success');
+  } else {
+    showToast('🗑 File deleted','success');
+  }
+  closeReasonModal('delProofOverlay');
+  // Refresh task detail
+  const t=TASKS.find(x=>x.id===delProofTaskId);
+  if(t){
+    const detail=await apiCall('GET','/tasks/'+delProofTaskId);
+    if(detail.success){ t.proofs=detail.task.proofs||[]; t.subtasks=detail.task.subtasks||[]; t.status=detail.task.status||t.status; t.stage=detail.task.stage||t.stage; }
+    renderDetail(t);
+  }
+  await loadDashboard(); refreshCounts();
+}
 
 // ═══════════════ STATEFUL ACTIONS ═══════════════
 // FIX: All actions now mutate task state and refresh UI
@@ -1692,6 +1990,44 @@ async function handleProofUpload(input,type){
   }
 }
 
+// D2 — Upload proof for a specific subtask
+async function handleSubtaskProofUpload(input, subtaskId, taskId){
+  if(!input.files||!input.files[0]) return;
+  const file=input.files[0];
+  const fd=new FormData();
+  fd.append('file', file);
+  showToast('📤 Uploading '+file.name+'…','info');
+  try{
+    const res=await fetch(API+'/tasks/'+taskId+'/subtasks/'+subtaskId+'/proof',{
+      method:'POST',
+      headers:{Authorization:'Bearer '+authToken},
+      body:fd
+    });
+    const data=await res.json();
+    if(!data.success){showToast('❌ Upload failed: '+data.error,'error');return;}
+    showToast('✅ '+file.name+' uploaded','success');
+    const t=TASKS.find(x=>x.id===taskId);
+    if(t){
+      const detail=await apiCall('GET','/tasks/'+taskId);
+      if(detail.success){ t.proofs=detail.task.proofs||[]; t.subtasks=detail.task.subtasks||[]; }
+      renderDetail(t);
+    }
+  } catch(err){ showToast('❌ Upload error: '+err.message,'error'); }
+}
+
+// View a subtask proof file
+async function viewSubtaskProof(proofId){
+  showToast('📂 Loading file…','info');
+  try{
+    const res=await fetch(API+'/subtask-files/'+proofId,{
+      headers:{Authorization:'Bearer '+authToken}
+    });
+    if(!res.ok){showToast('❌ Could not load file','error');return;}
+    const blob=await res.blob();
+    window.open(URL.createObjectURL(blob),'_blank');
+  } catch(err){ showToast('❌ Error loading file: '+err.message,'error'); }
+}
+
 // Open a proof file in a new tab — uses fetch+blob to carry the auth token
 async function viewProof(proofId){
   showToast('📂 Loading file…','info');
@@ -1761,6 +2097,114 @@ async function confirmSendback(){
   await loadDashboard();
   refreshCounts();
   closeSendback();
+}
+
+// ═══════════════ TRANSFER / SUSPEND / CANCEL / REQUEST SUSPEND ═══════════════
+let activeTaskId = null; // shared for all reason modals
+
+function closeReasonModal(id){ document.getElementById(id).classList.remove('active'); activeTaskId=null; }
+
+function openTransferModal(id){
+  activeTaskId=id;
+  // Populate dropdown with current staff
+  const sel=document.getElementById('transferAssignee');
+  sel.innerHTML='<option value="">— Select new assignee —</option>'+USERS.map(u=>`<option value="${u.id}">${u.name} (${u.role})</option>`).join('');
+  document.getElementById('transferNote').value='';
+  document.getElementById('transferOverlay').classList.add('active');
+}
+async function confirmTransfer(){
+  const newId=document.getElementById('transferAssignee').value;
+  const note=document.getElementById('transferNote').value.trim();
+  if(!newId){showToast('⚠️ Please select a new assignee','error');return;}
+  const data=await apiCall('PUT','/tasks/'+activeTaskId+'/transfer',{newAssigneeId:parseInt(newId),note});
+  if(!data.success){showToast('❌ '+data.error,'error');return;}
+  showToast('✅ '+data.message,'success');
+  closeReasonModal('transferOverlay');
+  await loadDashboard(); refreshCounts();
+}
+
+function openSuspendModal(id){
+  activeTaskId=id;
+  document.getElementById('suspendReason').value='';
+  document.getElementById('suspendOverlay').classList.add('active');
+}
+async function confirmSuspend(){
+  const reason=document.getElementById('suspendReason').value.trim();
+  if(!reason){showToast('⚠️ Please enter a reason','error');return;}
+  const data=await apiCall('PUT','/tasks/'+activeTaskId+'/suspend',{reason});
+  if(!data.success){showToast('❌ '+data.error,'error');return;}
+  showToast('⏸ Task suspended','success');
+  closeReasonModal('suspendOverlay');
+  await loadDashboard(); refreshCounts();
+}
+
+async function actionResume(id){
+  if(!confirm('Resume this task? It will return to its previous status.'))return;
+  const data=await apiCall('PUT','/tasks/'+id+'/resume',{});
+  if(!data.success){showToast('❌ '+data.error,'error');return;}
+  showToast('▶ Task resumed','success');
+  await loadDashboard(); refreshCounts();
+}
+
+function openCancelModal(id){
+  activeTaskId=id;
+  document.getElementById('cancelReason').value='';
+  document.getElementById('cancelOverlay').classList.add('active');
+}
+async function confirmCancel(){
+  const reason=document.getElementById('cancelReason').value.trim();
+  if(!reason){showToast('⚠️ Please enter a reason','error');return;}
+  if(!confirm('Are you sure? Cancellation is permanent and cannot be undone by staff.'))return;
+  const data=await apiCall('PUT','/tasks/'+activeTaskId+'/cancel',{reason});
+  if(!data.success){showToast('❌ '+data.error,'error');return;}
+  showToast('🚫 Task cancelled','success');
+  closeReasonModal('cancelOverlay');
+  await loadDashboard(); refreshCounts();
+}
+
+function openRequestSuspendModal(id){
+  activeTaskId=id;
+  document.getElementById('reqSuspendReason').value='';
+  document.getElementById('reqSuspendOverlay').classList.add('active');
+}
+async function confirmRequestSuspend(){
+  const reason=document.getElementById('reqSuspendReason').value.trim();
+  if(!reason){showToast('⚠️ Please provide a reason','error');return;}
+  const data=await apiCall('PUT','/tasks/'+activeTaskId+'/request-suspend',{reason});
+  if(!data.success){showToast('❌ '+data.error,'error');return;}
+  showToast('🚩 Suspension request sent to your manager','success');
+  closeReasonModal('reqSuspendOverlay');
+}
+
+// ═══════════════ SUGGEST A CHANGE ═══════════════
+let sugCategory='bug_report', sugPriority='normal';
+
+function openSuggestModal(){
+  document.getElementById('sugTitle').value='';
+  document.getElementById('sugDesc').value='';
+  sugCategory='bug_report'; sugPriority='normal';
+  document.querySelectorAll('.sug-cat-opt').forEach(el=>el.classList.toggle('sel', el.dataset.val==='bug_report'));
+  document.querySelectorAll('.sug-pri-btn').forEach(el=>el.classList.toggle('sel', el.dataset.val==='normal'));
+  document.getElementById('suggestOverlay').classList.add('active');
+}
+function setSugCat(el){
+  sugCategory=el.dataset.val;
+  document.querySelectorAll('.sug-cat-opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function setSugPri(el){
+  sugPriority=el.dataset.val;
+  document.querySelectorAll('.sug-pri-btn').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+}
+async function submitSuggestion(){
+  const title=document.getElementById('sugTitle').value.trim();
+  const desc=document.getElementById('sugDesc').value.trim();
+  if(!title||!desc){showToast('⚠️ Title and description are required','error');return;}
+  const data=await apiCall('POST','/suggestions',{category:sugCategory,title,description:desc,priority:sugPriority});
+  if(!data.success){showToast('❌ '+data.error,'error');return;}
+  showToast('💡 Suggestion submitted — thank you!','success');
+  closeReasonModal('suggestOverlay');
 }
 
 // ═══════════════ CREATE TASK MODAL ═══════════════
@@ -1878,13 +2322,23 @@ async function nextStep(){
     const assignedId = staffMember ? staffMember.id : null;
     if(!assignedId){showToast('⚠️ Could not find selected staff member','error');return;}
 
-    // Build subtasks array
+    // Build subtasks array — collect all 4 fields per subtask
     const subtaskRows = document.querySelectorAll('.subtask-row');
     const subtasks = [];
     subtaskRows.forEach(row=>{
-      const stTitle = row.querySelector('input[type="text"]');
+      const inputs   = row.querySelectorAll('input[type="text"]');
+      const selects  = row.querySelectorAll('select');
+      const dateInp  = row.querySelector('input[type="date"]');
+      const stTitle  = inputs[0];
+      const stInstr  = inputs[1];
+      const stAssign = selects[0];
       if(stTitle && stTitle.value.trim()){
-        subtasks.push({ title: stTitle.value.trim() });
+        subtasks.push({
+          title:        stTitle.value.trim(),
+          instructions: stInstr  ? stInstr.value.trim()  || null : null,
+          assignedTo:   stAssign ? stAssign.value || null        : null,
+          dueDate:      dateInp  ? dateInp.value  || null        : null
+        });
       }
     });
 
@@ -1939,7 +2393,7 @@ function addSubtask(){
     <div class="fg-row">
       <div class="fg"><label>Subtask Title <span class="req">*</span></label><input type="text" placeholder="e.g. Collect documents from client"></div>
       <div class="fg"><label>Assign To</label>
-        <select>${USERS.map(u=>`<option>${u.name}</option>`).join('')}</select>
+        <select><option value="">— Unassigned —</option>${USERS.map(u=>`<option value="${u.id}">${u.name}</option>`).join('')}</select>
       </div>
     </div>
     <div class="fg-row">

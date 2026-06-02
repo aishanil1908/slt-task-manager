@@ -57,10 +57,29 @@ app.use('/api/tasks',     tasksRoutes);     // /api/tasks (POST, GET/:id, PUT/:i
 app.use('/api/users',     usersRoutes);     // /api/users (GET, POST, GET/:id)
 app.use('/api/mis',       misRoutes);       // /api/mis/counts, /api/mis/tasks/:categoryCode
 const { serveFile } = require('./middleware/fileUpload');
-app.get('/api/files/:proofId', auth, serveFile);
+app.get('/api/files/:proofId',          auth, serveFile);
+app.get('/api/subtask-files/:proofId',  auth, async (req, res) => {
+  const { query: dbQuery } = require('./config/db');
+  try {
+    const result = await dbQuery(
+      'SELECT * FROM subtask_proofs WHERE id = $1',
+      [req.params.proofId]
+    );
+    if (!result.rows.length) return res.status(404).json({ success: false, error: 'File not found' });
+    const proof = result.rows[0];
+    const filePath = require('path').join(proof.storage_root || '.', proof.file_path);
+    if (!require('fs').existsSync(filePath)) return res.status(404).json({ success: false, error: 'File missing on disk' });
+    res.setHeader('Content-Disposition', `inline; filename="${proof.original_file_name || proof.file_name}"`);
+    res.setHeader('Content-Type', proof.mime_type || 'application/octet-stream');
+    res.sendFile(require('path').resolve(filePath));
+  } catch(err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 const adminRoutes = require('./routes/admin');
 app.use('/api/admin', adminRoutes);
-app.use('/api/clients',   require('./routes/clients'));
+app.use('/api/clients',      require('./routes/clients'));
+app.use('/api/suggestions',  require('./routes/suggestions'));
 
 // ── CATCH-ALL for unknown routes ──────────────────────────
 app.use((req, res) => {

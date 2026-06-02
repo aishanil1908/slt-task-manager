@@ -175,8 +175,8 @@ router.get('/:id', auth, async (req, res) => {
 
     const task = result.rows[0];
 
-    // Subtasks (include completed_by name for display)
-    const subtasks = await query(
+    // Subtasks with proof files per subtask (D1–D2)
+    const subtasksRaw = await query(
       `SELECT s.*,
               ua.full_name AS assigned_to_name,
               uc.full_name AS completed_by_name
@@ -188,7 +188,26 @@ router.get('/:id', auth, async (req, res) => {
       [req.params.id]
     );
 
-    // Proof uploads
+    // Attach proof files to each subtask
+    const subtaskProofsAll = await query(
+      `SELECT sp.*, u.full_name AS uploaded_by_name
+       FROM subtask_proofs sp
+       JOIN users u ON sp.uploaded_by = u.id
+       WHERE sp.task_id = $1
+       ORDER BY sp.uploaded_at`,
+      [req.params.id]
+    );
+    const subtaskProofMap = {};
+    subtaskProofsAll.rows.forEach(p => {
+      if (!subtaskProofMap[p.subtask_id]) subtaskProofMap[p.subtask_id] = [];
+      subtaskProofMap[p.subtask_id].push(p);
+    });
+    const subtasks = subtasksRaw.rows.map(st => ({
+      ...st,
+      proofs: subtaskProofMap[st.id] || []
+    }));
+
+    // Main task proof uploads (D3: only relevant when task has NO subtasks)
     const proofs = await query(
       `SELECT tp.*, u.full_name AS uploaded_by_name
        FROM task_proofs tp
@@ -208,7 +227,8 @@ router.get('/:id', auth, async (req, res) => {
       success: true,
       task: {
         ...task,
-        subtasks: subtasks.rows,
+        subtasks,
+        hasSubtasks: subtasks.length > 0,
         proofs: proofs.rows,
         fulfillment: fulfillment.rows[0] || null
       }
@@ -237,6 +257,23 @@ router.put('/:id/stage', auth, async (req, res) => {
   }
 
   try {
+    // D5 — Before confirming stage or verifying, check all subtasks are complete
+    if (['confirm', 'verify'].includes(action)) {
+      const subtaskCheck = await query(
+        `SELECT COUNT(*) AS total,
+                COUNT(*) FILTER (WHERE is_completed = TRUE) AS done
+         FROM subtasks WHERE task_id = $1`,
+        [req.params.id]
+      );
+      const { total, done } = subtaskCheck.rows[0];
+      if (parseInt(total) > 0 && parseInt(done) < parseInt(total)) {
+        return res.status(400).json({
+          success: false,
+          error: `Cannot advance task — ${parseInt(total) - parseInt(done)} subtask(s) are not yet completed. All subtasks must be done first.`
+        });
+      }
+    }
+
     // Call the database function we created in the schema
     const result = await query(
       `SELECT * FROM update_task_stage($1, $2, $3, $4)`,
@@ -404,6 +441,169 @@ router.post('/:id/fulfillment', auth, async (req, res) => {
   }
 });
 
+// ── DELETE PROOF FILE (Soft Delete — D6/D7/D8/D9/D10) ────
+// DELETE /api/tasks/:id/proof/:proofId
+// Body: { reason } — required for managers, optional for staff (D6: no reason needed)
+//
+// Rules:
+//   Staff  — can only delete their OWN file, ONLY while task is inprogress (D6/D7)
+//   Manager — can delete any file at any stage, reason required (D8)
+//   D9: if task was 'done' → revert to inprogress/stage2, wipe S3 confirmation, notify staff
+//   D10: soft-delete — record moves to deleted_proofs, file stays on disk
+router.delete('/:id/proof/:proofId', auth, async (req, res) => {
+  const isManager = MANAGER_ROLES.includes(req.user.role);
+  const { reason } = req.body;
+
+  if (isManager && (!reason || !reason.trim())) {
+    return res.status(400).json({ success: false, error: 'Managers must provide a reason when deleting a proof file' });
+  }
+
+  try {
+    // Fetch the proof record
+    const proofRes = await query(
+      `SELECT tp.*, t.status AS task_status, t.stage AS task_stage,
+              t.client_name, t.title AS task_title,
+              t.assigned_to, t.s3_confirmed_by AS s3_confirmed_by_id
+       FROM task_proofs tp
+       JOIN tasks t ON tp.task_id = t.id
+       WHERE tp.id = $1 AND tp.task_id = $2`,
+      [req.params.proofId, req.params.id]
+    );
+
+    if (!proofRes.rows.length) {
+      return res.status(404).json({ success: false, error: 'Proof file not found' });
+    }
+
+    const proof = proofRes.rows[0];
+
+    // D7: Staff can only delete before manager confirms (task must be inprogress)
+    if (!isManager) {
+      if (proof.uploaded_by !== req.user.id) {
+        return res.status(403).json({ success: false, error: 'You can only delete files you uploaded yourself' });
+      }
+      if (proof.task_status !== 'inprogress') {
+        return res.status(403).json({ success: false, error: 'You can only delete proof files while the task is in progress and not yet confirmed by your manager' });
+      }
+    }
+
+    // D10: Move record to deleted_proofs
+    await query(
+      `INSERT INTO deleted_proofs
+         (original_proof_id, task_id, stage, file_name, file_path, file_size,
+          mime_type, original_file_name, storage_root, uuid_prefix,
+          uploaded_by, uploaded_at,
+          deleted_by, delete_reason, deleted_by_role,
+          task_status_at_deletion, client_name, task_title)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)`,
+      [
+        proof.id, proof.task_id, proof.stage,
+        proof.file_name, proof.file_path, proof.file_size,
+        proof.mime_type, proof.original_file_name, proof.storage_root, proof.uuid_prefix,
+        proof.uploaded_by, proof.uploaded_at,
+        req.user.id, reason ? reason.trim() : null,
+        isManager ? 'manager' : 'staff',
+        proof.task_status, proof.client_name, proof.task_title
+      ]
+    );
+
+    // Remove from task_proofs
+    await query('DELETE FROM task_proofs WHERE id = $1', [req.params.proofId]);
+
+    // Update proof_uploaded flag if no more proofs remain for stage 2
+    const remaining = await query(
+      'SELECT COUNT(*) AS cnt FROM task_proofs WHERE task_id = $1 AND stage = $2',
+      [req.params.id, proof.stage]
+    );
+    if (parseInt(remaining.rows[0].cnt) === 0 && proof.stage === 2) {
+      await query('UPDATE tasks SET proof_uploaded = FALSE, updated_at = NOW() WHERE id = $1', [req.params.id]);
+    }
+
+    // D9: Manager deletes from a completed task → revert to inprogress/stage2
+    if (isManager && proof.task_status === 'done') {
+      await query(
+        `UPDATE tasks SET status='inprogress', stage=2,
+          s3_confirmed_by=NULL, s3_confirmed_at=NULL, s3_note=NULL,
+          proof_uploaded=FALSE, updated_at=NOW()
+         WHERE id=$1`,
+        [req.params.id]
+      );
+
+      // Log reversion
+      await query(
+        `INSERT INTO task_stage_history (task_id, action, from_status, to_status, from_stage, to_stage, action_by, note)
+         VALUES ($1,'proof_deleted','done','inprogress',5,2,$2,$3)`,
+        [req.params.id, req.user.id, `Proof deleted by manager (${req.user.full_name}): ${reason}. Task reverted to In Progress.`]
+      );
+
+      // Notify assignee
+      await query(
+        `INSERT INTO notifications (recipient_id, type, title, message, task_id)
+         VALUES ($1,'task_sent_back','Proof deleted — please re-upload',$2,$3)`,
+        [proof.assigned_to,
+         `A proof file was deleted from task "${proof.task_title.slice(0,50)}" by ${req.user.full_name}: "${reason}". Please re-upload the correct file.`,
+         req.params.id]
+      );
+
+      return res.json({ success: true, message: 'File deleted. Task has been reverted to In Progress — staff will be notified to re-upload.', reverted: true });
+    }
+
+    res.json({ success: true, message: 'Proof file deleted', reverted: false });
+
+  } catch (err) {
+    console.error('Proof delete error:', err);
+    res.status(500).json({ success: false, error: 'Could not delete proof: ' + err.message });
+  }
+});
+
+// ── SUBTASK PROOF UPLOAD ──────────────────────────────────
+// POST /api/tasks/:taskId/subtasks/:subtaskId/proof
+// D2: max 3 files per subtask
+router.post('/:taskId/subtasks/:subtaskId/proof', auth, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, error: 'No file uploaded' });
+
+    const { taskId, subtaskId } = req.params;
+
+    // Verify subtask belongs to task
+    const stCheck = await query(
+      'SELECT id FROM subtasks WHERE id = $1 AND task_id = $2',
+      [subtaskId, taskId]
+    );
+    if (!stCheck.rows.length) {
+      return res.status(404).json({ success: false, error: 'Subtask not found' });
+    }
+
+    // D2: enforce 3-file limit per subtask
+    const countRes = await query(
+      'SELECT COUNT(*) AS cnt FROM subtask_proofs WHERE subtask_id = $1',
+      [subtaskId]
+    );
+    if (parseInt(countRes.rows[0].cnt) >= 3) {
+      return res.status(400).json({ success: false, error: 'Maximum 3 proof files allowed per subtask' });
+    }
+
+    const saved = await saveFileToDisk(req, taskId);
+
+    await query(
+      `INSERT INTO subtask_proofs
+         (subtask_id, task_id, file_name, file_path, file_size, mime_type,
+          original_file_name, storage_root, uuid_prefix, uploaded_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+      [
+        subtaskId, taskId,
+        saved.fileName, saved.filePath, saved.size, saved.mimeType,
+        saved.originalName, saved.storageRoot, saved.uuid,
+        req.user.id
+      ]
+    );
+
+    res.json({ success: true, message: 'Subtask proof uploaded successfully' });
+  } catch (err) {
+    console.error('Subtask proof upload error:', err);
+    res.status(500).json({ success: false, error: 'Could not upload subtask proof: ' + err.message });
+  }
+});
+
 // ── SUBTASK COMPLETE / UNCOMPLETE ────────────────────────
 // PUT /api/tasks/:taskId/subtasks/:subtaskId/complete
 // Body: { completed: true|false }
@@ -446,6 +646,264 @@ router.get('/:id/history', auth, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, error: 'Could not fetch task history' });
+  }
+});
+
+// ── TRANSFER TASK ─────────────────────────────────────────
+// PUT /api/tasks/:id/transfer
+// Body: { newAssigneeId, note }
+// Who: Managers only (role level >= 3)
+const MANAGER_ROLES = ['Admin / Partner', 'Operations Manager', 'Relationship Manager'];
+router.put('/:id/transfer', auth, async (req, res) => {
+  if (!MANAGER_ROLES.includes(req.user.role)) {
+    return res.status(403).json({ success: false, error: 'Only managers can transfer tasks' });
+  }
+  const { newAssigneeId, note } = req.body;
+  if (!newAssigneeId) {
+    return res.status(400).json({ success: false, error: 'New assignee is required' });
+  }
+  try {
+    // Get task and new assignee
+    const taskRes = await query(
+      `SELECT t.*, ua.full_name AS old_assignee_name
+       FROM tasks t JOIN users ua ON t.assigned_to = ua.id
+       WHERE t.id = $1`, [req.params.id]
+    );
+    if (!taskRes.rows.length) return res.status(404).json({ success: false, error: 'Task not found' });
+    const task = taskRes.rows[0];
+
+    if (['done', 'cancelled'].includes(task.status)) {
+      return res.status(400).json({ success: false, error: `Cannot transfer a ${task.status} task` });
+    }
+
+    const newAssigneeRes = await query('SELECT id, full_name FROM users WHERE id = $1 AND is_active = TRUE', [newAssigneeId]);
+    if (!newAssigneeRes.rows.length) return res.status(404).json({ success: false, error: 'New assignee not found' });
+    const newAssignee = newAssigneeRes.rows[0];
+
+    // Update assigned_to
+    await query('UPDATE tasks SET assigned_to = $1, updated_at = NOW() WHERE id = $2', [newAssigneeId, req.params.id]);
+
+    // Log to history
+    await query(
+      `INSERT INTO task_stage_history (task_id, action, from_status, to_status, from_stage, to_stage, action_by, note)
+       VALUES ($1,'transferred',$2,$2,$3,$3,$4,$5)`,
+      [req.params.id, task.status, task.stage, req.user.id,
+       `Transferred from ${task.old_assignee_name} to ${newAssignee.full_name}. ${note || ''}`.trim()]
+    );
+
+    // Notify new assignee
+    await query(
+      `INSERT INTO notifications (recipient_id, type, title, message, task_id)
+       VALUES ($1,'task_assigned',$2,$3,$4)`,
+      [newAssigneeId,
+       `Task assigned: ${task.title.slice(0,50)}`,
+       `Task transferred to you by ${req.user.full_name}${note ? ': ' + note : ''}`,
+       req.params.id]
+    );
+
+    res.json({ success: true, message: `Task transferred to ${newAssignee.full_name}` });
+  } catch (err) {
+    console.error('Transfer error:', err);
+    res.status(500).json({ success: false, error: 'Could not transfer task: ' + err.message });
+  }
+});
+
+// ── SUSPEND TASK ──────────────────────────────────────────
+// PUT /api/tasks/:id/suspend
+// Body: { reason }
+// Who: Admin/Partner only
+router.put('/:id/suspend', auth, async (req, res) => {
+  if (req.user.role !== 'Admin / Partner') {
+    return res.status(403).json({ success: false, error: 'Only Admin/Partner can suspend tasks' });
+  }
+  const { reason } = req.body;
+  if (!reason || !reason.trim()) {
+    return res.status(400).json({ success: false, error: 'A reason is required to suspend a task' });
+  }
+  try {
+    const taskRes = await query('SELECT * FROM tasks WHERE id = $1', [req.params.id]);
+    if (!taskRes.rows.length) return res.status(404).json({ success: false, error: 'Task not found' });
+    const task = taskRes.rows[0];
+
+    if (['done', 'cancelled', 'suspended'].includes(task.status)) {
+      return res.status(400).json({ success: false, error: `Task is already ${task.status}` });
+    }
+
+    await query(
+      `UPDATE tasks SET status='suspended', pre_suspend_status=$1, suspend_reason=$2, updated_at=NOW() WHERE id=$3`,
+      [task.status, reason.trim(), req.params.id]
+    );
+
+    await query(
+      `INSERT INTO task_stage_history (task_id, action, from_status, to_status, from_stage, to_stage, action_by, note)
+       VALUES ($1,'suspended',$2,'suspended',$3,$3,$4,$5)`,
+      [req.params.id, task.status, task.stage, req.user.id, reason.trim()]
+    );
+
+    // Notify assignee
+    await query(
+      `INSERT INTO notifications (recipient_id, type, title, message, task_id)
+       VALUES ($1,'task_suspended','Task suspended',$2,$3)`,
+      [task.assigned_to,
+       `Your task "${task.title.slice(0,50)}" has been suspended by ${req.user.full_name}: ${reason}`,
+       req.params.id]
+    );
+
+    res.json({ success: true, message: 'Task suspended' });
+  } catch (err) {
+    console.error('Suspend error:', err);
+    res.status(500).json({ success: false, error: 'Could not suspend task: ' + err.message });
+  }
+});
+
+// ── RESUME TASK ───────────────────────────────────────────
+// PUT /api/tasks/:id/resume
+// Who: Admin/Partner only
+router.put('/:id/resume', auth, async (req, res) => {
+  if (req.user.role !== 'Admin / Partner') {
+    return res.status(403).json({ success: false, error: 'Only Admin/Partner can resume tasks' });
+  }
+  try {
+    const taskRes = await query('SELECT * FROM tasks WHERE id = $1', [req.params.id]);
+    if (!taskRes.rows.length) return res.status(404).json({ success: false, error: 'Task not found' });
+    const task = taskRes.rows[0];
+
+    if (task.status !== 'suspended') {
+      return res.status(400).json({ success: false, error: 'Task is not suspended' });
+    }
+
+    const resumeStatus = task.pre_suspend_status || 'pending';
+
+    await query(
+      `UPDATE tasks SET status=$1, pre_suspend_status=NULL, suspend_reason=NULL, updated_at=NOW() WHERE id=$2`,
+      [resumeStatus, req.params.id]
+    );
+
+    await query(
+      `INSERT INTO task_stage_history (task_id, action, from_status, to_status, from_stage, to_stage, action_by, note)
+       VALUES ($1,'resumed','suspended',$2,$3,$3,$4,'Task resumed')`,
+      [req.params.id, resumeStatus, task.stage, req.user.id]
+    );
+
+    await query(
+      `INSERT INTO notifications (recipient_id, type, title, message, task_id)
+       VALUES ($1,'task_assigned','Task resumed',$2,$3)`,
+      [task.assigned_to,
+       `Your task "${task.title.slice(0,50)}" has been resumed by ${req.user.full_name}`,
+       req.params.id]
+    );
+
+    res.json({ success: true, message: 'Task resumed', resumeStatus });
+  } catch (err) {
+    console.error('Resume error:', err);
+    res.status(500).json({ success: false, error: 'Could not resume task: ' + err.message });
+  }
+});
+
+// ── CANCEL TASK ───────────────────────────────────────────
+// PUT /api/tasks/:id/cancel
+// Body: { reason }
+// Who: Admin/Partner only
+router.put('/:id/cancel', auth, async (req, res) => {
+  if (req.user.role !== 'Admin / Partner') {
+    return res.status(403).json({ success: false, error: 'Only Admin/Partner can cancel tasks' });
+  }
+  const { reason } = req.body;
+  if (!reason || !reason.trim()) {
+    return res.status(400).json({ success: false, error: 'A reason is required to cancel a task' });
+  }
+  try {
+    const taskRes = await query('SELECT * FROM tasks WHERE id = $1', [req.params.id]);
+    if (!taskRes.rows.length) return res.status(404).json({ success: false, error: 'Task not found' });
+    const task = taskRes.rows[0];
+
+    if (task.status === 'cancelled') {
+      return res.status(400).json({ success: false, error: 'Task is already cancelled' });
+    }
+
+    await query(
+      `UPDATE tasks SET status='cancelled', cancel_reason=$1, updated_at=NOW() WHERE id=$2`,
+      [reason.trim(), req.params.id]
+    );
+
+    await query(
+      `INSERT INTO task_stage_history (task_id, action, from_status, to_status, from_stage, to_stage, action_by, note)
+       VALUES ($1,'cancelled',$2,'cancelled',$3,$3,$4,$5)`,
+      [req.params.id, task.status, task.stage, req.user.id, reason.trim()]
+    );
+
+    // Notify assignee
+    await query(
+      `INSERT INTO notifications (recipient_id, type, title, message, task_id)
+       VALUES ($1,'task_cancelled','Task cancelled',$2,$3)`,
+      [task.assigned_to,
+       `Task "${task.title.slice(0,50)}" has been cancelled by ${req.user.full_name}: ${reason}`,
+       req.params.id]
+    );
+
+    res.json({ success: true, message: 'Task cancelled' });
+  } catch (err) {
+    console.error('Cancel error:', err);
+    res.status(500).json({ success: false, error: 'Could not cancel task: ' + err.message });
+  }
+});
+
+// ── REQUEST SUSPENSION (staff) ────────────────────────────
+// PUT /api/tasks/:id/request-suspend
+// Body: { reason }
+// Who: Any active user — creates a notification to their manager
+router.put('/:id/request-suspend', auth, async (req, res) => {
+  const { reason } = req.body;
+  if (!reason || !reason.trim()) {
+    return res.status(400).json({ success: false, error: 'Please provide a reason for the suspension request' });
+  }
+  try {
+    const taskRes = await query(
+      `SELECT t.*, ua.full_name AS assignee_name, m.id AS manager_id, m.full_name AS manager_name
+       FROM tasks t
+       JOIN users ua ON t.assigned_to = ua.id
+       LEFT JOIN user_reporting_map urm ON urm.user_id = t.assigned_to AND urm.priority = 'primary'
+       LEFT JOIN users m ON urm.manager_id = m.id
+       WHERE t.id = $1`, [req.params.id]
+    );
+    if (!taskRes.rows.length) return res.status(404).json({ success: false, error: 'Task not found' });
+    const task = taskRes.rows[0];
+
+    if (['done', 'cancelled', 'suspended'].includes(task.status)) {
+      return res.status(400).json({ success: false, error: `Cannot request suspension for a ${task.status} task` });
+    }
+
+    // Log request in history
+    await query(
+      `INSERT INTO task_stage_history (task_id, action, from_status, to_status, from_stage, to_stage, action_by, note)
+       VALUES ($1,'suspend_requested',$2,$2,$3,$3,$4,$5)`,
+      [req.params.id, task.status, task.stage, req.user.id, `Suspension requested: ${reason.trim()}`]
+    );
+
+    // Notify manager (or all admins if no manager)
+    const recipients = [];
+    if (task.manager_id) {
+      recipients.push(task.manager_id);
+    } else {
+      const admins = await query(`SELECT id FROM users WHERE role='Admin / Partner' AND is_active=TRUE`);
+      admins.rows.forEach(a => recipients.push(a.id));
+    }
+
+    for (const rid of recipients) {
+      await query(
+        `INSERT INTO notifications (recipient_id, type, title, message, task_id)
+         VALUES ($1,'suspend_requested',$2,$3,$4)`,
+        [rid,
+         `Suspension requested: ${task.title.slice(0,50)}`,
+         `${req.user.full_name} has requested suspension of this task: ${reason}`,
+         req.params.id]
+      );
+    }
+
+    res.json({ success: true, message: 'Suspension request sent to your manager' });
+  } catch (err) {
+    console.error('Request suspend error:', err);
+    res.status(500).json({ success: false, error: 'Could not send request: ' + err.message });
   }
 });
 

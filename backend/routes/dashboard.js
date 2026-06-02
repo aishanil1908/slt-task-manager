@@ -43,16 +43,25 @@ router.get('/summary', auth, async (req, res) => {
 });
 
 // ── TASK LIST PER STATUS ───────────────────────────────────
-// GET /api/dashboard/tasks/pending
-// GET /api/dashboard/tasks/inprogress
-// GET /api/dashboard/tasks/postsales
-// GET /api/dashboard/tasks/done
+// GET /api/dashboard/tasks/:status
+// Supports: pending, inprogress, postsales, done, suspended, cancelled
+// cancelled & suspended — Admin/Partner only
 router.get('/tasks/:status', auth, async (req, res) => {
-  const validStatuses = ['pending', 'inprogress', 'postsales', 'done'];
+  const isAdmin = req.user.role === 'Admin / Partner';
+  const validStatuses = ['pending', 'inprogress', 'postsales', 'done', 'suspended', 'cancelled'];
   const status = req.params.status;
 
   if (!validStatuses.includes(status)) {
     return res.status(400).json({ success: false, error: 'Invalid status' });
+  }
+
+  // Cancelled tasks: Admin/Partner only
+  if (status === 'cancelled' && !isAdmin) {
+    return res.status(403).json({ success: false, error: 'Access denied' });
+  }
+  // Suspended tasks: Admin/Partner only (staff are notified but can't browse the list)
+  if (status === 'suspended' && !isAdmin) {
+    return res.status(403).json({ success: false, error: 'Access denied' });
   }
 
   try {
@@ -62,6 +71,7 @@ router.get('/tasks/:status', auth, async (req, res) => {
          t.tx_type, t.due_date, t.created_at,
          t.client_name, t.client_mobile, t.client_email,
          t.proof_uploaded, t.s4_doc_uploaded,
+         t.suspend_reason, t.cancel_reason,
          v.name AS vertical_name,
          c.name AS category_name, c.code AS category_code,
          n.name AS nature_name,

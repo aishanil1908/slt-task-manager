@@ -205,6 +205,13 @@ tr:hover td{background:rgba(59,130,246,0.03);}
       <div style="padding:12px 16px;">
         <button class="btn btn-primary" style="width:100%;font-size:12px;" onclick="openMasterWizard()">+ Add via Wizard</button>
       </div>
+      <div class="nav-section">System</div>
+      <div class="nav-item" onclick="showSection('filevault')" id="nav-filevault">
+        <span class="icon">🗄️</span> File Vault
+      </div>
+      <div class="nav-item" onclick="showSection('suggestions')" id="nav-suggestions">
+        <span class="icon">💡</span> Suggestions
+      </div>
     </div>
 
     <!-- Main -->
@@ -314,6 +321,43 @@ tr:hover td{background:rgba(59,130,246,0.03);}
         </div>
       </div>
 
+      <!-- ── FILE VAULT (D11/D12) ── -->
+      <div class="section-page" id="sec-filevault">
+        <div class="page-header">
+          <div>
+            <div class="page-title">🗄️ File Vault</div>
+            <div class="page-sub">Soft-deleted proof files — restore or permanently delete</div>
+          </div>
+          <button class="btn btn-ghost" onclick="loadFileVault()">↻ Refresh</button>
+        </div>
+        <div id="vaultInfo" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px 14px;font-size:12.5px;color:#fcd34d;margin-bottom:16px;">
+          ⚠️ Files listed here have been soft-deleted and are NOT accessible to users. Physical files remain on disk until you permanently delete them from here. Use Restore to put a file back on its task.
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>File Name</th><th>Task</th><th>Client</th><th>Uploaded By</th><th>Deleted By</th><th>Reason</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody id="vaultBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── SUGGESTIONS ── -->
+      <div class="section-page" id="sec-suggestions">
+        <div class="page-header">
+          <div>
+            <div class="page-title">💡 User Suggestions</div>
+            <div class="page-sub">Feature requests, bug reports, and feedback from staff</div>
+          </div>
+          <button class="btn btn-ghost" onclick="loadSuggestions()">↻ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Category</th><th>Title</th><th>Description</th><th>Submitted By</th><th>Priority</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody id="suggestionsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
     </div><!-- /main-content -->
   </div><!-- /admin-layout -->
 </div><!-- /adminShell -->
@@ -328,8 +372,12 @@ tr:hover td{background:rgba(59,130,246,0.03);}
       <button class="modal-close" onclick="closeModal('userModal')">✕</button>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Full Name *</label><input id="u_fullName" placeholder="Priya Sharma"></div>
+      <div class="form-group"><label>Full Name *</label><input id="u_fullName" placeholder="Priya Sharma" oninput="previewUsername(this.value)"></div>
       <div class="form-group"><label>Email *</label><input id="u_email" type="email" placeholder="priya@slt.com"></div>
+    </div>
+    <div id="u_usernamePreviewRow" style="display:none;background:rgba(99,179,237,0.08);border:1px solid rgba(99,179,237,0.3);border-radius:7px;padding:8px 12px;font-size:12.5px;margin-bottom:10px;color:#90cdf4;">
+      🔑 Login username will be: <strong id="u_usernamePreview" style="font-family:monospace;font-size:13px;"></strong>
+      <span style="color:#718096;margin-left:8px;">(auto-generated, cannot be changed)</span>
     </div>
     <div class="form-row">
       <div class="form-group"><label>Mobile</label><input id="u_mobile" placeholder="9876543210"></div>
@@ -349,7 +397,7 @@ tr:hover td{background:rgba(59,130,246,0.03);}
       <div class="form-group"><label>Job Profile</label>
         <select id="u_jobProfile"><option value="">Select role first...</option></select>
       </div>
-      <div class="form-group"><label>Password</label><input id="u_password" type="password" placeholder="Min 6 characters"></div>
+      <div class="form-group"><label>Password <span id="u_passReq" style="color:#f87171;">*</span></label><input id="u_password" type="password" placeholder="Min 6 characters"></div>
     </div>
     <div class="form-group"><label>Vertical Access</label>
       <div id="verticalCheckboxes" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;"></div>
@@ -822,6 +870,102 @@ function showSection(name){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('sec-'+name).classList.add('active');
   document.getElementById('nav-'+name).classList.add('active');
+  if(name==='filevault') loadFileVault();
+  if(name==='suggestions') loadSuggestions();
+}
+
+// ── FILE VAULT (D11/D12) ──────────────────────────────────
+async function loadFileVault(){
+  const d=await api('GET','/admin/deleted-files');
+  if(!d.success){ showToast(d.error,'error'); return; }
+  const tbody=document.getElementById('vaultBody');
+  if(!d.files.length){
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px;">No deleted files in vault</td></tr>';
+    return;
+  }
+  tbody.innerHTML=d.files.map(f=>{
+    const dt=new Date(f.deleted_at).toLocaleDateString('en-IN');
+    const kb=f.file_size?(f.file_size>1048576?(f.file_size/1048576).toFixed(1)+' MB':Math.round(f.file_size/1024)+' KB'):'';
+    const catColor=f.deleted_by_role==='manager'?'color:#fca5a5':'color:#93c5fd';
+    return `<tr>
+      <td><strong style="font-size:12px;">${f.original_file_name||f.file_name}</strong><br><span style="color:var(--muted);font-size:11px;">${kb}</span></td>
+      <td style="font-size:12px;">${f.task_title?f.task_title.slice(0,40):'—'}</td>
+      <td style="font-size:12px;">${f.client_name||'—'}</td>
+      <td style="font-size:12px;">${f.uploaded_by_name||'—'}</td>
+      <td style="font-size:12px;${catColor}">${f.deleted_by_name||'—'}<br><span style="font-size:10px;opacity:.7;">${f.deleted_by_role||''}</span></td>
+      <td style="font-size:11px;color:var(--muted);max-width:160px;">${f.delete_reason||'—'}</td>
+      <td style="font-size:11px;color:var(--muted);">${dt}<br><span style="opacity:.7;">${f.task_status_at_deletion||''}</span></td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="restoreVaultFile(${f.id},'${(f.original_file_name||f.file_name).replace(/'/g,"\\'")}')">♻️ Restore</button>
+          <button class="btn btn-sm" style="background:rgba(239,68,68,0.12);color:#fca5a5;border:1px solid rgba(239,68,68,0.3);" onclick="permanentDeleteVaultFile(${f.id},'${(f.original_file_name||f.file_name).replace(/'/g,"\\'")}')">🗑 Delete Forever</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function restoreVaultFile(id, name){
+  if(!confirm(`Restore "${name}" back to its task? It will appear in the Restored Files section.`)) return;
+  const d=await api('POST',`/admin/deleted-files/${id}/restore`,{});
+  if(d.success){ showToast('♻️ '+d.message,'success'); loadFileVault(); }
+  else showToast(d.error,'error');
+}
+
+async function permanentDeleteVaultFile(id, name){
+  if(!confirm(`⚠️ PERMANENTLY delete "${name}"?\n\nThis removes the physical file from disk and cannot be undone.`)) return;
+  const d=await api('DELETE',`/admin/deleted-files/${id}`);
+  if(d.success){ showToast('🗑 '+d.message,'success'); loadFileVault(); }
+  else showToast(d.error,'error');
+}
+
+// ── SUGGESTIONS ───────────────────────────────────────────
+const SUG_STATUS_LABELS={'open':'🆕 Open','under_review':'🔍 Reviewing','planned':'📅 Planned','done':'✅ Done','rejected':'❌ Rejected'};
+const SUG_PRI_LABELS={'normal':'Normal','important':'⚠️ Important','critical':'🔴 Critical'};
+
+async function loadSuggestions(){
+  const d=await api('GET','/suggestions');
+  if(!d.success){ showToast(d.error,'error'); return; }
+  const tbody=document.getElementById('suggestionsBody');
+  if(!d.suggestions.length){
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px;">No suggestions yet</td></tr>';
+    return;
+  }
+  const catIcons={bug_report:'🐛',feature_request:'✨',ui_improvement:'🎨',other:'💬'};
+  tbody.innerHTML=d.suggestions.map(s=>{
+    const dt=new Date(s.created_at).toLocaleDateString('en-IN');
+    const statusOpts=Object.entries(SUG_STATUS_LABELS).map(([v,l])=>`<option value="${v}"${s.status===v?' selected':''}>${l}</option>`).join('');
+    return `<tr id="sug-row-${s.id}">
+      <td style="font-size:13px;">${catIcons[s.category]||'💬'} ${(s.category||'').replace('_',' ')}</td>
+      <td style="font-size:13px;font-weight:700;">${s.title}</td>
+      <td style="font-size:12px;color:var(--muted);max-width:200px;">${s.description.slice(0,100)}${s.description.length>100?'…':''}</td>
+      <td style="font-size:12px;">${s.submitted_by_name||'—'}<br><span style="color:var(--muted);font-size:10px;">${s.submitted_by_role||''}</span></td>
+      <td style="font-size:12px;">${SUG_PRI_LABELS[s.priority]||s.priority}</td>
+      <td>
+        <select onchange="updateSuggestionStatus(${s.id},this.value)" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:6px;font-size:12px;">
+          ${statusOpts}
+        </select>
+      </td>
+      <td style="font-size:11px;color:var(--muted);">${dt}</td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="addSugNote(${s.id})">📝 Note</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function updateSuggestionStatus(id, status){
+  const d=await api('PUT',`/suggestions/${id}`,{status});
+  if(d.success) showToast('Status updated','success');
+  else showToast(d.error,'error');
+}
+
+async function addSugNote(id){
+  const note=prompt('Add admin note for this suggestion:');
+  if(note===null) return;
+  const d=await api('PUT',`/suggestions/${id}`,{adminNote:note});
+  if(d.success){ showToast('Note saved','success'); loadSuggestions(); }
+  else showToast(d.error,'error');
 }
 
 // ── TOAST ─────────────────────────────────────────────────
@@ -1009,11 +1153,20 @@ function toggleNatFlag(flag){
   else{ natNft=!natNft; document.getElementById('nat_nftToggle').className='toggle'+(natNft?' on':''); document.getElementById('nat_nftLabel').textContent=natNft?'Yes':'No'; }
 }
 
+function previewUsername(name){
+  const uname=name.toLowerCase().replace(/\s+/g,'.').replace(/[^a-z.]/g,'');
+  const row=document.getElementById('u_usernamePreviewRow');
+  if(uname){ document.getElementById('u_usernamePreview').textContent=uname; row.style.display='block'; }
+  else { row.style.display='none'; }
+}
+
 function openUserModal(){
   editingUserId=null; dualEnabled=false;
   document.getElementById('userModalTitle').textContent='Create User';
   document.getElementById('saveUserBtn').textContent='Create User';
   ['u_fullName','u_email','u_mobile','u_password'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('u_passReq').style.display='';
+  document.getElementById('u_usernamePreviewRow').style.display='none';
   document.getElementById('u_role').value='';
   document.getElementById('u_jobProfile').innerHTML='<option value="">Select role first...</option>';
   document.getElementById('u_primaryMgr').innerHTML='<option value="">Select role first...</option>';
@@ -1033,8 +1186,10 @@ function openEditUser(id){
   const u=USERS.find(x=>x.id===id);
   if(!u)return;
   editingUserId=id; dualEnabled=u.allow_dual_reporting;
-  document.getElementById('userModalTitle').textContent='Edit User';
+  document.getElementById('userModalTitle').textContent='Edit User — '+u.username;
   document.getElementById('saveUserBtn').textContent='Save Changes';
+  document.getElementById('u_passReq').style.display='none';
+  document.getElementById('u_usernamePreviewRow').style.display='none';
   document.getElementById('u_fullName').value=u.full_name;
   document.getElementById('u_email').value=u.email;
   document.getElementById('u_mobile').value=u.mobile||'';
@@ -1060,6 +1215,9 @@ async function saveUser(){
   const email=document.getElementById('u_email').value.trim();
   const role=document.getElementById('u_role').value;
   if(!fullName||!email||!role){ showToast('Full name, email and role are required','error'); return; }
+  const pw=document.getElementById('u_password').value;
+  if(!editingUserId && !pw){ showToast('Password is required when creating a new user','error'); return; }
+  if(pw && pw.length<6){ showToast('Password must be at least 6 characters','error'); return; }
 
   // Enforce manager required for non-admin roles
   const primaryMgrId=document.getElementById('u_primaryMgr').value;

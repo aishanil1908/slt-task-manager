@@ -746,4 +746,107 @@ router.put('/natures/:id/toggle', async (req, res) => {
   }
 });
 
+// ════════════════════════════════════════════════════════════
+// FILE VAULT — D11/D12
+// ════════════════════════════════════════════════════════════
+const path = require('path');
+const fs   = require('fs');
+
+// GET /api/admin/deleted-files — list all soft-deleted proofs
+router.get('/deleted-files', auth, async (req, res) => {
+  if (req.user.role !== 'Admin / Partner') {
+    return res.status(403).json({ success: false, error: 'Access denied' });
+  }
+  try {
+    const result = await query(
+      `SELECT dp.*,
+              ub.full_name AS uploaded_by_name,
+              db.full_name AS deleted_by_name
+       FROM deleted_proofs dp
+       LEFT JOIN users ub ON dp.uploaded_by = ub.id
+       LEFT JOIN users db ON dp.deleted_by  = db.id
+       ORDER BY dp.deleted_at DESC`
+    );
+    res.json({ success: true, files: result.rows });
+  } catch (err) {
+    console.error('File vault list error:', err);
+    res.status(500).json({ success: false, error: 'Could not fetch deleted files' });
+  }
+});
+
+// POST /api/admin/deleted-files/:id/restore — D12: move back to task_proofs, mark is_restored=true
+router.post('/deleted-files/:id/restore', auth, async (req, res) => {
+  if (req.user.role !== 'Admin / Partner') {
+    return res.status(403).json({ success: false, error: 'Access denied' });
+  }
+  try {
+    const dpRes = await query('SELECT * FROM deleted_proofs WHERE id = $1', [req.params.id]);
+    if (!dpRes.rows.length) {
+      return res.status(404).json({ success: false, error: 'Record not found in vault' });
+    }
+    const dp = dpRes.rows[0];
+
+    // Re-insert into task_proofs with is_restored=true — D12: 3-file limit does NOT apply to restores
+    await query(
+      `INSERT INTO task_proofs
+         (task_id, stage, file_name, file_path, file_size, mime_type,
+          original_file_name, storage_root, uuid_prefix, uploaded_by, uploaded_at, is_restored)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,TRUE)`,
+      [
+        dp.task_id, dp.stage, dp.file_name, dp.file_path, dp.file_size,
+        dp.mime_type, dp.original_file_name, dp.storage_root, dp.uuid_prefix,
+        dp.uploaded_by, dp.uploaded_at
+      ]
+    );
+
+    // Update proof_uploaded flag on task
+    if (dp.stage === 2) {
+      await query('UPDATE tasks SET proof_uploaded=TRUE, updated_at=NOW() WHERE id=$1', [dp.task_id]);
+    }
+
+    // Log history
+    await query(
+      `INSERT INTO task_stage_history (task_id, action, from_status, to_status, from_stage, to_stage, action_by, note)
+       SELECT id, 'proof_restored', status, status, stage, stage, $1, $2 FROM tasks WHERE id=$3`,
+      [req.user.id, `File "${dp.original_file_name}" restored from File Vault by ${req.user.full_name}`, dp.task_id]
+    );
+
+    // Remove from deleted_proofs
+    await query('DELETE FROM deleted_proofs WHERE id = $1', [req.params.id]);
+
+    res.json({ success: true, message: `File "${dp.original_file_name}" restored to the task` });
+  } catch (err) {
+    console.error('Restore error:', err);
+    res.status(500).json({ success: false, error: 'Could not restore file: ' + err.message });
+  }
+});
+
+// DELETE /api/admin/deleted-files/:id — D11: permanent delete (file from disk + record)
+router.delete('/deleted-files/:id', auth, async (req, res) => {
+  if (req.user.role !== 'Admin / Partner') {
+    return res.status(403).json({ success: false, error: 'Access denied' });
+  }
+  try {
+    const dpRes = await query('SELECT * FROM deleted_proofs WHERE id = $1', [req.params.id]);
+    if (!dpRes.rows.length) {
+      return res.status(404).json({ success: false, error: 'Record not found in vault' });
+    }
+    const dp = dpRes.rows[0];
+
+    // Delete physical file from disk
+    const filePath = path.join(dp.storage_root || '.', dp.file_path);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    // Remove record
+    await query('DELETE FROM deleted_proofs WHERE id = $1', [req.params.id]);
+
+    res.json({ success: true, message: `File "${dp.original_file_name}" permanently deleted` });
+  } catch (err) {
+    console.error('Permanent delete error:', err);
+    res.status(500).json({ success: false, error: 'Could not permanently delete: ' + err.message });
+  }
+});
+
 module.exports = router;
