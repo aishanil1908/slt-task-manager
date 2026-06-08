@@ -79,7 +79,32 @@ ALTER TABLE public.task_proofs
   ADD COLUMN IF NOT EXISTS is_restored BOOLEAN DEFAULT FALSE;
 
 
+-- ── 5. tasks — suspend/cancel columns ───────────────────────
+ALTER TABLE public.tasks ADD COLUMN IF NOT EXISTS suspend_reason  TEXT;
+ALTER TABLE public.tasks ADD COLUMN IF NOT EXISTS cancel_reason   TEXT;
+ALTER TABLE public.tasks ADD COLUMN IF NOT EXISTS suspended_at    TIMESTAMP WITHOUT TIME ZONE;
+ALTER TABLE public.tasks ADD COLUMN IF NOT EXISTS cancelled_at    TIMESTAMP WITHOUT TIME ZONE;
+ALTER TABLE public.tasks ADD COLUMN IF NOT EXISTS suspended_by    INTEGER REFERENCES public.users(id);
+ALTER TABLE public.tasks ADD COLUMN IF NOT EXISTS cancelled_by    INTEGER REFERENCES public.users(id);
+
+
+-- ── 6. task_status enum — new values ─────────────────────────
+ALTER TYPE public.task_status ADD VALUE IF NOT EXISTS 'suspended';
+ALTER TYPE public.task_status ADD VALUE IF NOT EXISTS 'cancelled';
+
+
+-- ── 7. notification_type enum — new values ───────────────────
+ALTER TYPE public.notification_type ADD VALUE IF NOT EXISTS 'task_cancelled';
+ALTER TYPE public.notification_type ADD VALUE IF NOT EXISTS 'task_suspended';
+ALTER TYPE public.notification_type ADD VALUE IF NOT EXISTS 'task_transferred';
+ALTER TYPE public.notification_type ADD VALUE IF NOT EXISTS 'suspension_requested';
+ALTER TYPE public.notification_type ADD VALUE IF NOT EXISTS 'suggestion_received';
+
+
 -- ── Done ─────────────────────────────────────────────────────
 -- Verify with:
---   \dt public.*  (should include the 3 new tables above)
---   \d public.task_proofs  (should show is_restored column)
+--   \dt public.*           (3 new tables)
+--   \d public.task_proofs  (is_restored column)
+--   \d public.tasks        (suspend_reason, cancel_reason etc.)
+--   SELECT enum_range(NULL::task_status);
+--   SELECT enum_range(NULL::notification_type);
